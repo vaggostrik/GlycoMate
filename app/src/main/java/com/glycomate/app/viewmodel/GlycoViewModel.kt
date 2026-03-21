@@ -26,7 +26,7 @@ data class DashboardState(
 sealed class AppEvent {
     data class XpGained(val amount: Int, val reason: String)  : AppEvent()
     data class BadgeUnlocked(val badge: Badge)                : AppEvent()
-    data class LevelUp(val newLevel: Int, val title: String)  : AppEvent()
+    data class LevelUp(val newLevel: Int, val titleRes: Int)  : AppEvent()
     data class StreakUpdated(val days: Int)                    : AppEvent()
     data class ShowSnackbar(val message: String)              : AppEvent()
 }
@@ -223,7 +223,7 @@ class GlycoViewModel(app: Application) : AndroidViewModel(app) {
             when (e) {
                 is GamificationEvent.XpGained     -> _events.emit(AppEvent.XpGained(e.amount, e.reason))
                 is GamificationEvent.BadgeUnlocked -> _events.emit(AppEvent.BadgeUnlocked(e.badge))
-                is GamificationEvent.LevelUp       -> _events.emit(AppEvent.LevelUp(e.newLevel, e.title))
+                is GamificationEvent.LevelUp       -> _events.emit(AppEvent.LevelUp(e.newLevel, e.titleRes))
                 is GamificationEvent.StreakUpdated -> _events.emit(AppEvent.StreakUpdated(e.days))
             }
         }

@@ -1,48 +1,50 @@
 package com.glycomate.app.gamification
 
+import com.glycomate.app.R
+
 // ── Badge definitions ─────────────────────────────────────────────────────────
 
 enum class BadgeId {
-    FIRST_LOG,          // Πρώτη καταγραφή
-    WEEK_STREAK,        // 7 συνεχόμενες μέρες
-    TWO_WEEK_STREAK,    // 14 μέρες
-    MONTH_STREAK,       // 30 μέρες
-    PERFECT_DAY,        // 100% TIR μια μέρα
-    PERFECT_WEEK,       // TIR > 70% για 7 μέρες
-    FIRST_MEAL_LOG,     // Πρώτο γεύμα
-    MEAL_MASTER,        // 50 γεύματα
-    INSULIN_PRO,        // 100 καταγραφές ινσουλίνης
-    NIGHT_OWL,          // Μέτρηση μετά τα μεσάνυχτα
-    EARLY_BIRD,         // Μέτρηση πριν τις 7 πμ
-    CGM_CONNECTED,      // Σύνδεση CGM
-    STABLE_GLUCOSE,     // 6 ώρες εντός στόχου
+    FIRST_LOG,
+    WEEK_STREAK,
+    TWO_WEEK_STREAK,
+    MONTH_STREAK,
+    PERFECT_DAY,
+    PERFECT_WEEK,
+    FIRST_MEAL_LOG,
+    MEAL_MASTER,
+    INSULIN_PRO,
+    NIGHT_OWL,
+    EARLY_BIRD,
+    CGM_CONNECTED,
+    STABLE_GLUCOSE,
 }
 
 data class Badge(
     val id:          BadgeId,
     val emoji:       String,
-    val name:        String,
-    val description: String,
+    val nameRes:     Int,
+    val descRes:     Int,
     val xpReward:    Int,
-    val earnedAtMs:  Long? = null   // null = δεν έχει κερδηθεί
+    val earnedAtMs:  Long? = null
 ) {
     val isEarned: Boolean get() = earnedAtMs != null
 }
 
 val ALL_BADGES = listOf(
-    Badge(BadgeId.FIRST_LOG,        "🚀", "Πρώτο βήμα",      "Πρώτη καταγραφή γλυκόζης",          50),
-    Badge(BadgeId.WEEK_STREAK,      "⚡", "7 Ημέρες",         "7 συνεχόμενες μέρες καταγραφής",    100),
-    Badge(BadgeId.TWO_WEEK_STREAK,  "🛡️", "Iron Will",        "14 συνεχόμενες μέρες",              200),
-    Badge(BadgeId.MONTH_STREAK,     "👑", "Champion",         "30 συνεχόμενες μέρες",              500),
-    Badge(BadgeId.PERFECT_DAY,      "🏆", "Τέλεια Μέρα",      "100% Time in Range",                150),
-    Badge(BadgeId.PERFECT_WEEK,     "🌟", "Star Week",        "TIR > 70% για 7 μέρες",            300),
-    Badge(BadgeId.FIRST_MEAL_LOG,   "🍽️", "Foodie",           "Πρώτη καταγραφή γεύματος",          30),
-    Badge(BadgeId.MEAL_MASTER,      "👨‍🍳", "Meal Master",      "50 καταγραφές γευμάτων",           200),
-    Badge(BadgeId.INSULIN_PRO,      "💉", "Insulin Pro",      "100 καταγραφές ινσουλίνης",         200),
-    Badge(BadgeId.NIGHT_OWL,        "🌙", "Night Watch",      "Μέτρηση μετά τα μεσάνυχτα",         50),
-    Badge(BadgeId.EARLY_BIRD,       "🌅", "Early Bird",       "Μέτρηση πριν τις 7:00 πμ",          50),
-    Badge(BadgeId.CGM_CONNECTED,    "📡", "Connected",        "Σύνδεση CGM αισθητήρα",             100),
-    Badge(BadgeId.STABLE_GLUCOSE,   "📊", "Steady as a Rock", "6 ώρες εντός στόχου",              150),
+    Badge(BadgeId.FIRST_LOG,        "🚀", R.string.badge_1_name,  R.string.badge_1_desc,  50),
+    Badge(BadgeId.WEEK_STREAK,      "⚡", R.string.badge_2_name,  R.string.badge_2_desc,  100),
+    Badge(BadgeId.TWO_WEEK_STREAK,  "🛡️", R.string.badge_3_name,  R.string.badge_3_desc,  200),
+    Badge(BadgeId.MONTH_STREAK,     "👑", R.string.badge_4_name,  R.string.badge_4_desc,  500),
+    Badge(BadgeId.PERFECT_DAY,      "🏆", R.string.badge_5_name,  R.string.badge_5_desc,  150),
+    Badge(BadgeId.PERFECT_WEEK,     "🌟", R.string.badge_6_name,  R.string.badge_6_desc,  300),
+    Badge(BadgeId.FIRST_MEAL_LOG,   "🍽️", R.string.badge_7_name,  R.string.badge_7_desc,  30),
+    Badge(BadgeId.MEAL_MASTER,      "👨‍🍳", R.string.badge_8_name,  R.string.badge_8_desc,  200),
+    Badge(BadgeId.INSULIN_PRO,      "💉", R.string.badge_9_name,  R.string.badge_9_desc,  200),
+    Badge(BadgeId.NIGHT_OWL,        "🌙", R.string.badge_10_name, R.string.badge_10_desc, 50),
+    Badge(BadgeId.EARLY_BIRD,       "🌅", R.string.badge_11_name, R.string.badge_11_desc, 50),
+    Badge(BadgeId.CGM_CONNECTED,    "📡", R.string.badge_12_name, R.string.badge_12_desc, 100),
+    Badge(BadgeId.STABLE_GLUCOSE,   "📊", R.string.badge_13_name, R.string.badge_13_desc, 150),
 )
 
 // ── XP & Level ────────────────────────────────────────────────────────────────
@@ -71,17 +73,17 @@ data class GamificationState(
     val unearnedBadges: List<Badge>
         get() = ALL_BADGES.filter { it.id !in earnedBadgeIds }
 
-    val levelTitle: String get() = when (level) {
-        1    -> "Αρχάριος"
-        2    -> "Παρατηρητής"
-        3    -> "Σταθερός"
-        4    -> "Αξιόπιστος"
-        5    -> "Προχωρημένος"
-        6    -> "Ειδικός"
-        7    -> "Warrior"
-        8    -> "Champion"
-        9    -> "Legend"
-        else -> "Master"
+    val levelTitleRes: Int get() = when (level) {
+        1    -> R.string.level_1
+        2    -> R.string.level_2
+        3    -> R.string.level_3
+        4    -> R.string.level_4
+        5    -> R.string.level_5
+        6    -> R.string.level_6
+        7    -> R.string.level_7
+        8    -> R.string.level_8
+        9    -> R.string.level_9
+        else -> R.string.level_10
     }
 }
 
@@ -108,48 +110,47 @@ private fun xpToLevel(xp: Int): Int {
 // ── Buddy ─────────────────────────────────────────────────────────────────────
 
 enum class BuddyMood {
-    VERY_HAPPY,  // Perfect day / new badge
-    HAPPY,       // Εντός στόχου
-    NEUTRAL,     // Ούτε καλό ούτε κακό
-    SAD,         // Ξέχασε να καταγράψει
-    WORRIED      // Hypo ή hyper
+    VERY_HAPPY,
+    HAPPY,
+    NEUTRAL,
+    SAD,
+    WORRIED
 }
 
 data class BuddyMessage(
-    val text:  String,
+    val resId: Int,
+    val args:  List<Any> = emptyList(),
     val mood:  BuddyMood
 )
 
 fun getBuddyMessage(mood: BuddyMood, streakDays: Int, hoursWithoutLog: Int): BuddyMessage {
-    val text = when (mood) {
+    return when (mood) {
         BuddyMood.VERY_HAPPY -> when {
-            streakDays >= 30 -> "Απίστευτο! 30 μέρες! Είσαι ο απόλυτος Champion! 👑"
-            streakDays >= 14 -> "Wow! 2 εβδομάδες σερί! Κερδίζεις το badge Iron Will! 🛡️"
-            streakDays >= 7  -> "Εξαιρετικό! 7 μέρες συνεχόμενα! Συνέχισε έτσι! ⚡"
-            else             -> "Μπράβο! Τέλεια μέρα! Συνέχισε έτσι! 🏆"
+            streakDays >= 30 -> BuddyMessage(R.string.msg_perfect_30, mood = mood)
+            streakDays >= 14 -> BuddyMessage(R.string.msg_perfect_14, mood = mood)
+            streakDays >= 7  -> BuddyMessage(R.string.msg_perfect_7, mood = mood)
+            else             -> BuddyMessage(R.string.msg_perfect, mood = mood)
         }
         BuddyMood.HAPPY -> when {
-            streakDays > 0 -> "Πάμε καλά! $streakDays μέρες σερί — μην το σπάσεις! 🔥"
-            else           -> "Καλά πάμε! Κράτα το streak σου! 💪"
+            streakDays > 0 -> BuddyMessage(R.string.msg_happy_streak, listOf(streakDays), mood)
+            else           -> BuddyMessage(R.string.msg_happy, mood = mood)
         }
-        BuddyMood.NEUTRAL -> "Εντάξει σήμερα… Αύριο θα είναι καλύτερα! 🤔"
+        BuddyMood.NEUTRAL -> BuddyMessage(R.string.msg_neutral, mood = mood)
         BuddyMood.SAD -> when {
-            hoursWithoutLog >= 8 -> "Πεινάω πολύ… ${hoursWithoutLog} ώρες χωρίς καταγραφή! Τι τρως; 🍽️"
-            hoursWithoutLog >= 4 -> "Γεια σου! Πότε θα με θυμηθείς; Πάμε μέτρηση! 📊"
-            else                 -> "Μην ξεχνάς να καταγράφεις! Είμαι εδώ 😊"
+            hoursWithoutLog >= 8 -> BuddyMessage(R.string.msg_sad_8, listOf(hoursWithoutLog), mood)
+            hoursWithoutLog >= 4 -> BuddyMessage(R.string.msg_sad_4, mood = mood)
+            else                 -> BuddyMessage(R.string.msg_sad, mood = mood)
         }
-        BuddyMood.WORRIED -> "Πρόσεξε! Η γλυκόζη σου χρειάζεται προσοχή τώρα! ⚠️"
+        BuddyMood.WORRIED -> BuddyMessage(R.string.msg_worried, mood = mood)
     }
-    return BuddyMessage(text, mood)
 }
 
-// ── XP award amounts ──────────────────────────────────────────────────────────
 object XpAward {
     const val GLUCOSE_LOG    = 10
     const val INSULIN_LOG    = 5
     const val MEAL_LOG       = 15
-    const val PERFECT_DAY    = 50   // TIR 100%
-    const val IN_RANGE_DAY   = 20   // TIR >= 70%
-    const val STREAK_BONUS   = 5    // per day of streak
+    const val PERFECT_DAY    = 50
+    const val IN_RANGE_DAY   = 20
+    const val STREAK_BONUS   = 5
     const val CGM_SYNC       = 2
 }

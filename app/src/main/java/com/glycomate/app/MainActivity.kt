@@ -1,7 +1,7 @@
 package com.glycomate.app
 
 import android.os.Bundle
-import androidx.activity.ComponentActivity
+import androidx.appcompat.app.AppCompatActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.Image
@@ -12,6 +12,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.unit.dp
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavGraph.Companion.findStartDestination
@@ -25,19 +26,21 @@ import com.glycomate.app.viewmodel.AppEvent
 import com.glycomate.app.viewmodel.GlycoViewModel
 import kotlinx.coroutines.delay
 
-class MainActivity : ComponentActivity() {
+class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         val splashScreen = installSplashScreen()
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
+            val vm: GlycoViewModel = viewModel()
+            val theme by vm.repo.prefs.appTheme.collectAsState(initial = "System")
             var showCustomSplash by remember { mutableStateOf(true) }
 
-            GlycoMateTheme {
+            GlycoMateTheme(theme = theme) {
                 if (showCustomSplash) {
                     SplashScreenContent(onFinished = { showCustomSplash = false })
                 } else {
-                    GlycoMateRoot()
+                    GlycoMateRoot(vm)
                 }
             }
         }
@@ -46,27 +49,23 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun SplashScreenContent(onFinished: () -> Unit) {
-    // Show for 2 seconds
     LaunchedEffect(Unit) {
         delay(2000)
         onFinished()
     }
-
     Box(modifier = Modifier.fillMaxSize()) {
         Image(
             painter      = painterResource(id = R.drawable.splash_logo),
             contentDescription = null,
             modifier     = Modifier.fillMaxSize(),
-            contentScale = ContentScale.Crop // This ensures it fills the whole screen
+            contentScale = ContentScale.Crop
         )
     }
 }
 
 @Composable
-fun GlycoMateRoot() {
-    val vm: GlycoViewModel = viewModel()
+fun GlycoMateRoot(vm: GlycoViewModel) {
     val onboardingDone by vm.onboardingDone.collectAsState()
-
     if (!onboardingDone) {
         OnboardingScreen(viewModel = vm, onDone = {})
     } else {
@@ -79,22 +78,18 @@ private fun MainApp(vm: GlycoViewModel) {
     val navController   = rememberNavController()
     val currentBack     by navController.currentBackStackEntryAsState()
     val currentRoute    = currentBack?.destination?.route
-    val gamState        by vm.gamificationState.collectAsState()
 
-    // Popup states
     var xpToast:      Pair<Int, String>? by remember { mutableStateOf(null) }
     var badgeDialog:  Badge?             by remember { mutableStateOf(null) }
-    var levelUpState: Pair<Int, String>? by remember { mutableStateOf(null) }
+    var levelUpState: Pair<Int, Int>?    by remember { mutableStateOf(null) }
 
-    // Collect events
     LaunchedEffect(Unit) {
         vm.events.collect { event ->
             when (event) {
                 is AppEvent.XpGained     -> xpToast = event.amount to event.reason
                 is AppEvent.BadgeUnlocked -> badgeDialog = event.badge
-                is AppEvent.LevelUp      -> levelUpState = event.newLevel to event.title
-                is AppEvent.StreakUpdated -> { /* handled in BuddyScreen */ }
-                is AppEvent.ShowSnackbar -> { /* TODO: snackbar */ }
+                is AppEvent.LevelUp      -> levelUpState = event.newLevel to event.titleRes
+                else -> {}
             }
         }
     }
@@ -135,12 +130,8 @@ private fun MainApp(vm: GlycoViewModel) {
                     composable(Screen.MoodTracker.route)     { MoodTrackerScreen(vm) }
                     composable(Screen.Reminders.route)       { RemindersScreen() }
                     composable(Screen.Sos.route)             { SosScreen(vm) }
-                    composable(Screen.AiMealScan.route)      { AiMealScanScreen(vm, onBack = {
-                        navController.popBackStack()
-                    }) }
-                    composable(Screen.BarcodeScanner.route)  { BarcodeScannerScreen(vm, onBack = {
-                        navController.popBackStack()
-                    }) }
+                    composable(Screen.AiMealScan.route)      { AiMealScanScreen(vm, onBack = { navController.popBackStack() }) }
+                    composable(Screen.BarcodeScanner.route)  { BarcodeScannerScreen(vm, onBack = { navController.popBackStack() }) }
                     composable(Screen.Settings.route) {
                         SettingsScreen(vm,
                             onOpenMoodTracker = { navController.navigate(Screen.MoodTracker.route) },
@@ -152,21 +143,13 @@ private fun MainApp(vm: GlycoViewModel) {
             }
         }
 
-        // XP Toast — floats on top at the top of screen
         xpToast?.let { (amount, reason) ->
-            Box(modifier = Modifier.fillMaxSize().padding(top = WindowInsets.statusBars
-                .asPaddingValues().calculateTopPadding()),
-                contentAlignment = Alignment.TopCenter) {
+            Box(modifier = Modifier.fillMaxSize().padding(top = 40.dp), contentAlignment = Alignment.TopCenter) {
                 XpToast(amount = amount, reason = reason, onDismiss = { xpToast = null })
             }
         }
     }
 
-    // Dialogs
-    badgeDialog?.let { badge ->
-        BadgeUnlockedDialog(badge = badge, onDismiss = { badgeDialog = null })
-    }
-    levelUpState?.let { (level, title) ->
-        LevelUpDialog(level = level, title = title, onDismiss = { levelUpState = null })
-    }
+    badgeDialog?.let { BadgeUnlockedDialog(badge = it, onDismiss = { badgeDialog = null }) }
+    levelUpState?.let { LevelUpDialog(level = it.first, titleRes = it.second, onDismiss = { levelUpState = null }) }
 }

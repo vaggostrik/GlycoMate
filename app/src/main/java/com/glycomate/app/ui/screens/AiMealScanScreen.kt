@@ -26,12 +26,14 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.*
 import androidx.core.content.FileProvider
 import coil.compose.rememberAsyncImagePainter
+import com.glycomate.app.R
 import com.glycomate.app.ui.theme.*
 import com.glycomate.app.data.model.InsulinType
 import com.glycomate.app.viewmodel.GlycoViewModel
@@ -82,7 +84,6 @@ fun AiMealScanScreen(
     val savedKey by viewModel.repo.prefs.openAiKey.collectAsState(initial = "")
     LaunchedEffect(savedKey) { if (apiKey.isBlank()) apiKey = savedKey }
 
-    // We use a temporary URI to avoid caching issues with the same filename
     var tempCameraUri by remember { mutableStateOf<Uri?>(null) }
 
     val cameraLauncher = rememberLauncherForActivityResult(ActivityResultContracts.TakePicture()) { success ->
@@ -95,13 +96,12 @@ fun AiMealScanScreen(
 
     val permLauncher = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
         if (granted) {
-            // Generate a unique filename for each photo to bust Coil's cache
             val file = File(context.cacheDir, "meal_${System.currentTimeMillis()}.jpg")
             val uri = FileProvider.getUriForFile(context, "${context.packageName}.fileprovider", file)
             tempCameraUri = uri
             cameraLauncher.launch(uri)
         } else {
-            errorMsg = "Απαιτείται άδεια κάμερας"
+            errorMsg = context.getString(R.string.camera_permission_error)
         }
     }
 
@@ -112,8 +112,8 @@ fun AiMealScanScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("AI Σκανάρισμα γεύματος", fontWeight = FontWeight.W700) },
-                navigationIcon = { IconButton(onClick = onBack) { Icon(Icons.Filled.ArrowBack, "Πίσω") } },
+                title = { Text(stringResource(R.string.ai_scan_title), fontWeight = FontWeight.W700) },
+                navigationIcon = { IconButton(onClick = onBack) { Icon(Icons.Filled.ArrowBack, stringResource(R.string.back)) } },
                 actions = {
                     IconButton(onClick = { showApiKeyInput = !showApiKeyInput }) {
                         Icon(Icons.Filled.Key, null, tint = if (apiKey.isNotBlank()) GlycoGreen else MaterialTheme.colorScheme.error)
@@ -138,17 +138,19 @@ fun AiMealScanScreen(
             }, onGallery = { galleryLauncher.launch("image/*") }, onClearPhoto = { photoUri = null; scanResult = null })
 
             if (photoUri != null && scanResult == null) {
+                val errorKey = stringResource(R.string.api_key_error)
+                val analyzingTxt = stringResource(R.string.analyzing)
                 Button(
                     onClick = {
-                        if (apiKey.isBlank()) { errorMsg = "Βάλε το Groq API key (πάτα το 🔑)"; return@Button }
-                        isAnalyzing = true; statusMsg = "Ανάλυση..."; errorMsg = null
+                        if (apiKey.isBlank()) { errorMsg = errorKey; return@Button }
+                        isAnalyzing = true; statusMsg = analyzingTxt; errorMsg = null
                         scope.launch(Dispatchers.IO) {
                             val result = analyzeMealPhoto(context, photoUri!!, apiKey, viewModel::calculateBolus) { msg ->
                                 scope.launch(Dispatchers.Main) { statusMsg = msg }
                             }
                             withContext(Dispatchers.Main) {
                                 isAnalyzing = false; statusMsg = ""
-                                result.fold(onSuccess = { scanResult = it }, onFailure = { errorMsg = it.localizedMessage ?: it.message ?: "Σφάλμα ανάλυσης AI. Δοκίμασε ξανά." })
+                                result.fold(onSuccess = { scanResult = it }, onFailure = { errorMsg = it.localizedMessage ?: it.message ?: "Analysis error" })
                             }
                         }
                     },
@@ -157,9 +159,9 @@ fun AiMealScanScreen(
                 ) {
                     if (isAnalyzing) {
                         CircularProgressIndicator(modifier = Modifier.size(18.dp), strokeWidth = 2.dp, color = MaterialTheme.colorScheme.onPrimary)
-                        Spacer(Modifier.width(8.dp)); Text(statusMsg.ifBlank { "Ανάλυση..." })
+                        Spacer(Modifier.width(8.dp)); Text(statusMsg.ifBlank { analyzingTxt })
                     } else {
-                        Icon(Icons.Filled.AutoAwesome, null); Spacer(Modifier.width(8.dp)); Text("Ανάλυση γεύματος με AI")
+                        Icon(Icons.Filled.AutoAwesome, null); Spacer(Modifier.width(8.dp)); Text(stringResource(R.string.analyze_button))
                     }
                 }
             }
@@ -189,9 +191,9 @@ private fun ApiKeyCard(currentKey: String, onSave: (String) -> Unit) {
     var key by remember { mutableStateOf(currentKey) }
     Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)) {
         Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-            Text("Groq API Key", fontWeight = FontWeight.W600)
-            OutlinedTextField(value = key, onValueChange = { key = it }, label = { Text("API Key (gsk_...)") }, modifier = Modifier.fillMaxWidth())
-            Button(onClick = { onSave(key.trim()) }, modifier = Modifier.fillMaxWidth()) { Text("Αποθήκευση") }
+            Text(stringResource(R.string.groq_key_label), fontWeight = FontWeight.W600)
+            OutlinedTextField(value = key, onValueChange = { key = it }, label = { Text(stringResource(R.string.api_key_hint)) }, modifier = Modifier.fillMaxWidth())
+            Button(onClick = { onSave(key.trim()) }, modifier = Modifier.fillMaxWidth()) { Text(stringResource(R.string.save_key)) }
         }
     }
 }
@@ -210,8 +212,8 @@ private fun PhotoArea(photoUri: Uri?, onCamera: () -> Unit, onGallery: () -> Uni
             Column(modifier = Modifier.padding(32.dp).fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(16.dp)) {
                 Icon(Icons.Filled.CameraAlt, null, modifier = Modifier.size(56.dp), tint = MaterialTheme.colorScheme.primary)
                 Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                    Button(onClick = onCamera, modifier = Modifier.weight(1f)) { Text("Κάμερα") }
-                    OutlinedButton(onClick = onGallery, modifier = Modifier.weight(1f)) { Text("Γκαλερί") }
+                    Button(onClick = onCamera, modifier = Modifier.weight(1f)) { Text(stringResource(R.string.camera)) }
+                    OutlinedButton(onClick = onGallery, modifier = Modifier.weight(1f)) { Text(stringResource(R.string.gallery)) }
                 }
             }
         }
@@ -222,20 +224,20 @@ private fun PhotoArea(photoUri: Uri?, onCamera: () -> Unit, onGallery: () -> Uni
 private fun ScanResultCard(result: MealScanResult, onLog: () -> Unit, onCancel: () -> Unit) {
     Card(modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(16.dp)) {
         Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-            Text("Αποτέλεσμα AI (${result.aiConfidence}% εμπιστοσύνη)", fontWeight = FontWeight.W600)
+            Text(stringResource(R.string.ai_result_title, result.aiConfidence), fontWeight = FontWeight.W600)
             result.foods.forEach { food ->
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                     Text(food.name, modifier = Modifier.weight(1f))
-                    Text("${food.carbsGrams.toInt()}g carbs", fontWeight = FontWeight.W600, color = MaterialTheme.colorScheme.primary)
+                    Text(stringResource(R.string.carbs_grams, food.carbsGrams.toInt()), fontWeight = FontWeight.W600, color = MaterialTheme.colorScheme.primary)
                 }
             }
             HorizontalDivider()
-            Text("Σύνολο: ${result.totalCarbs.toInt()}g υδατάνθρακες", fontWeight = FontWeight.W700)
+            Text(stringResource(R.string.total_carbs, result.totalCarbs.toInt()), fontWeight = FontWeight.W700)
             if (result.suggestedDose > 0f) {
-                Text("Προτεινόμενη δόση: ${String.format("%.1f", result.suggestedDose)}U", color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.W700)
+                Text(stringResource(R.string.suggested_dose, result.suggestedDose), color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.W700)
             }
-            Button(onClick = onLog, modifier = Modifier.fillMaxWidth(), colors = ButtonDefaults.buttonColors(containerColor = GlycoGreen)) { Text("Καταγραφή") }
-            OutlinedButton(onClick = onCancel, modifier = Modifier.fillMaxWidth()) { Text("Ακύρωση") }
+            Button(onClick = onLog, modifier = Modifier.fillMaxWidth(), colors = ButtonDefaults.buttonColors(containerColor = GlycoGreen)) { Text(stringResource(R.string.log_button)) }
+            OutlinedButton(onClick = onCancel, modifier = Modifier.fillMaxWidth()) { Text(stringResource(R.string.cancel_button)) }
         }
     }
 }
@@ -251,7 +253,7 @@ private suspend fun analyzeMealPhoto(context: Context, photoUri: Uri, apiKey: St
         } else bitmap
         scaled.compress(Bitmap.CompressFormat.JPEG, 70, out)
         Base64.encodeToString(out.toByteArray(), Base64.NO_WRAP)
-    } ?: throw Exception("Σφάλμα ανάγνωσης εικόνας")
+    } ?: throw Exception("Error reading image")
 
     val prompt = """
         You are a nutrition expert. Carefully examine the food image and identify ALL visible food items.
@@ -261,7 +263,6 @@ private suspend fun analyzeMealPhoto(context: Context, photoUri: Uri, apiKey: St
         Be specific with food names and realistic with carb estimates. If the image is unclear, still try your best.
     """.trimIndent()
 
-    // Groq uses OpenAI-compatible format with base64 image_url
     val requestBody = JSONObject().apply {
         put("model", "meta-llama/llama-4-scout-17b-16e-instruct")
         put("max_tokens", 1024)
@@ -289,11 +290,10 @@ private suspend fun analyzeMealPhoto(context: Context, photoUri: Uri, apiKey: St
     val url = "https://api.groq.com/openai/v1/chat/completions"
     val reqBody = requestBody.toString().toRequestBody("application/json".toMediaType())
 
-    // Retry loop for 429 rate-limit errors (free tier: 30 req/min)
     val maxAttempts = 3
     var lastError = ""
     for (attempt in 1..maxAttempts) {
-        onStatus(if (attempt == 1) "Ανάλυση..." else "Προσπάθεια $attempt/$maxAttempts...")
+        onStatus(if (attempt == 1) "Analyzing..." else "Attempt $attempt/$maxAttempts...")
         val req = Request.Builder()
             .url(url)
             .header("Authorization", "Bearer $apiKey")
@@ -304,21 +304,21 @@ private suspend fun analyzeMealPhoto(context: Context, photoUri: Uri, apiKey: St
         val body = resp.body?.string() ?: ""
 
         if (resp.code == 429) {
-            lastError = "Υπέρβαση ορίου Groq (30 αιτήματα/λεπτό) — προσπάθεια $attempt/$maxAttempts"
+            lastError = "Groq limit exceeded — attempt $attempt/$maxAttempts"
             if (attempt == maxAttempts) break
             val waitSec = resp.header("Retry-After")?.toLongOrNull() ?: (attempt * 10L)
             for (remaining in waitSec downTo 1) {
-                onStatus("Αναμονή ${remaining}δ... ($attempt/$maxAttempts)")
+                onStatus("Wait ${remaining}s... ($attempt/$maxAttempts)")
                 kotlinx.coroutines.delay(1_000L)
             }
             continue
         }
 
-        if (resp.code == 401) throw Exception("Λάθος Groq API key. Έλεγξε το key στο console.groq.com")
+        if (resp.code == 401) throw Exception("Invalid Groq API key")
 
         if (!resp.isSuccessful) {
-            val detail = body.take(300).ifBlank { "χωρίς λεπτομέρειες" }
-            throw Exception("Σφάλμα API (${resp.code}): $detail")
+            val detail = body.take(300).ifBlank { "no details" }
+            throw Exception("API Error (${resp.code}): $detail")
         }
 
         val rawText = try {
@@ -328,23 +328,23 @@ private suspend fun analyzeMealPhoto(context: Context, photoUri: Uri, apiKey: St
                 .getString("content").trim()
                 .removePrefix("```json").removePrefix("```").removeSuffix("```").trim()
         } catch (e: Exception) {
-            throw Exception("Μη αναμενόμενη απάντηση από AI. Δοκίμασε ξανά.")
+            throw Exception("Unexpected AI response")
         }
 
         val parsed = try {
             JSONObject(rawText)
         } catch (e: Exception) {
-            throw Exception("Σφάλμα ανάλυσης απάντησης AI. Δοκίμασε ξανά.")
+            throw Exception("AI parse error")
         }
 
         val foodsArray = parsed.getJSONArray("foods")
         val foods = (0 until foodsArray.length()).map { i ->
             val f = foodsArray.getJSONObject(i)
-            FoodItem(f.getString("name"), f.getDouble("carbs_grams").toFloat(), 100f, "Μέτριο")
+            FoodItem(f.getString("name"), f.getDouble("carbs_grams").toFloat(), 100f, "Medium")
         }
         val totalCarbs = parsed.getDouble("total_carbs").toFloat()
         return@runCatching MealScanResult(foods, totalCarbs, 0f, suggestDose(totalCarbs), parsed.optInt("confidence", 80), parsed.optString("description", ""))
     }
 
-    throw Exception("$lastError. Δοκίμασε ξανά σε λίγο.")
+    throw Exception("$lastError. Try again later.")
 }

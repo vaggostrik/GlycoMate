@@ -21,7 +21,7 @@ private object GamifKeys {
 sealed class GamificationEvent {
     data class XpGained(val amount: Int, val reason: String) : GamificationEvent()
     data class BadgeUnlocked(val badge: Badge)               : GamificationEvent()
-    data class LevelUp(val newLevel: Int, val title: String) : GamificationEvent()
+    data class LevelUp(val newLevel: Int, val titleRes: Int) : GamificationEvent()
     data class StreakUpdated(val days: Int)                   : GamificationEvent()
 }
 
@@ -128,10 +128,10 @@ class GamificationManager(private val context: Context) {
         // Level up check
         val oldLevel = current.level
         val newXp    = current.xp + xpGain
-        val newLevel = GamificationState(xp = newXp).level
+        val newState = GamificationState(xp = newXp)
+        val newLevel = newState.level
         if (newLevel > oldLevel) {
-            events.add(GamificationEvent.LevelUp(newLevel,
-                GamificationState(xp = newXp).levelTitle))
+            events.add(GamificationEvent.LevelUp(newLevel, newState.levelTitleRes))
         }
 
         // Badge events
@@ -139,7 +139,7 @@ class GamificationManager(private val context: Context) {
             val badge    = ALL_BADGES.first { it.id == badgeId }
             xpGain      += badge.xpReward
             events.add(GamificationEvent.BadgeUnlocked(badge))
-            events.add(GamificationEvent.XpGained(badge.xpReward, "Badge: ${badge.name}"))
+            events.add(GamificationEvent.XpGained(badge.xpReward, "Badge: ${badgeId.name}"))
         }
 
         // Buddy mood
@@ -190,10 +190,10 @@ class GamificationManager(private val context: Context) {
         }
 
         val newXp    = current.xp + xpGain
-        val newLevel = GamificationState(xp = newXp).level
+        val newState = GamificationState(xp = newXp)
+        val newLevel = newState.level
         if (newLevel > current.level)
-            events.add(GamificationEvent.LevelUp(newLevel,
-                GamificationState(xp = newXp).levelTitle))
+            events.add(GamificationEvent.LevelUp(newLevel, newState.levelTitleRes))
 
         persist(xp = newXp, badgeIds = current.earnedBadgeIds + newBadges)
         return events

@@ -1,5 +1,6 @@
 package com.glycomate.app.ui.screens
 
+import androidx.appcompat.app.AppCompatDelegate
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -13,10 +14,13 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.*
 import androidx.compose.ui.unit.*
+import androidx.core.os.LocaleListCompat
 import androidx.datastore.preferences.core.edit
+import com.glycomate.app.R
 import com.glycomate.app.data.cgm.libre.LluRegion
 import com.glycomate.app.data.cgm.dexcom.DexcomResult
 import com.glycomate.app.data.cgm.dexcom.DexcomRegion
@@ -35,6 +39,7 @@ import com.glycomate.app.viewmodel.GlycoViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import androidx.compose.foundation.clickable
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -47,14 +52,17 @@ fun SettingsScreen(
     var expandProfile by remember { mutableStateOf(false) }
     var expandCgm     by remember { mutableStateOf(false) }
     var expandAlerts  by remember { mutableStateOf(false) }
+    var expandLang    by remember { mutableStateOf(false) }
+    var expandTheme   by remember { mutableStateOf(false) }
 
     val scope     = rememberCoroutineScope()
     val profile   by viewModel.userProfile.collectAsState()
     val cgmSource by viewModel.cgmSource.collectAsState()
+    val currentTheme by viewModel.repo.prefs.appTheme.collectAsState(initial = "System")
 
     Scaffold(topBar = {
         TopAppBar(
-            title = { Text("Ρυθμίσεις",
+            title = { Text(stringResource(R.string.settings_title),
                 style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.W700)) },
             colors = TopAppBarDefaults.topAppBarColors(
                 containerColor = MaterialTheme.colorScheme.background))
@@ -66,7 +74,7 @@ fun SettingsScreen(
 
             // Profile section
             SectionCard(
-                title    = "Προφίλ & Παράμετροι",
+                title    = stringResource(R.string.profile_section),
                 icon     = Icons.Filled.Person,
                 expanded = expandProfile,
                 onToggle = { expandProfile = !expandProfile }
@@ -76,7 +84,7 @@ fun SettingsScreen(
 
             // CGM section
             SectionCard(
-                title    = "Σύνδεση CGM — ${if (cgmSource == "NONE") "Ανενεργή" else cgmSource}",
+                title    = stringResource(R.string.cgm_section, if (cgmSource == "NONE") stringResource(R.string.cgm_inactive) else cgmSource),
                 icon     = Icons.Filled.Sensors,
                 badge    = cgmSource != "NONE",
                 expanded = expandCgm,
@@ -87,12 +95,34 @@ fun SettingsScreen(
 
             // Alerts section
             SectionCard(
-                title    = "Όρια ειδοποιήσεων",
+                title    = stringResource(R.string.alerts_section),
                 icon     = Icons.Filled.Notifications,
                 expanded = expandAlerts,
                 onToggle = { expandAlerts = !expandAlerts }
             ) {
                 AlertEditor(viewModel = viewModel)
+            }
+
+            // Theme section
+            SectionCard(
+                title    = stringResource(R.string.theme_section),
+                icon     = Icons.Filled.Palette,
+                expanded = expandTheme,
+                onToggle = { expandTheme = !expandTheme }
+            ) {
+                ThemeSelector(currentTheme) { newTheme ->
+                    scope.launch { viewModel.repo.prefs.saveAppTheme(newTheme) }
+                }
+            }
+
+            // Language section
+            SectionCard(
+                title    = stringResource(R.string.language_section),
+                icon     = Icons.Filled.Language,
+                expanded = expandLang,
+                onToggle = { expandLang = !expandLang }
+            ) {
+                LanguageSelector()
             }
 
             // Quick links
@@ -101,15 +131,10 @@ fun SettingsScreen(
                 colors = CardDefaults.cardColors(
                     containerColor = MaterialTheme.colorScheme.surface)) {
                 Column {
-                    listOf<Triple<String, String, () -> Unit>>(
-                        Triple("😊 Mood Tracker",
-                            "Καταγραφή διάθεσης & συσχέτιση με γλυκόζη",
-                            onOpenMoodTracker),
-                        Triple("⏰ Υπενθυμίσεις",
-                            "Φάρμακα, μέτρηση, άσκηση",
-                            onOpenReminders),
-                        Triple("📄 Αναφορά PDF",
-                            "Δημιουργία & κοινοποίηση αναφοράς για τον γιατρό",
+                    listOf<Triple<Int, Int, () -> Unit>>(
+                        Triple(R.string.mood_tracker_title, R.string.mood_tracker_subtitle, onOpenMoodTracker),
+                        Triple(R.string.reminders_title, R.string.reminders_subtitle, onOpenReminders),
+                        Triple(R.string.pdf_report_title, R.string.pdf_report_subtitle,
                             {
                                 scope.launch(Dispatchers.IO) {
                                     val readings = viewModel.allReadings.value
@@ -125,21 +150,20 @@ fun SettingsScreen(
                                     }
                                 }
                             })
-                    ).forEach { (title, subtitle, action) ->
+                    ).forEach { (titleRes, subtitleRes, action) ->
                         Row(modifier = Modifier.fillMaxWidth()
-                            .padding(horizontal = 16.dp, vertical = 14.dp),
+                            .padding(horizontal = 16.dp, vertical = 14.dp)
+                            .clickable { action() },
                             horizontalArrangement = Arrangement.SpaceBetween,
                             verticalAlignment = Alignment.CenterVertically) {
                             Column(modifier = Modifier.weight(1f)) {
-                                Text(title, style = MaterialTheme.typography.bodyMedium
+                                Text(stringResource(titleRes), style = MaterialTheme.typography.bodyMedium
                                     .copy(fontWeight = FontWeight.W500))
-                                Text(subtitle, style = MaterialTheme.typography.bodySmall,
+                                Text(stringResource(subtitleRes), style = MaterialTheme.typography.bodySmall,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant)
                             }
-                            IconButton(onClick = action) {
-                                Icon(Icons.Filled.ChevronRight, null,
-                                    tint = MaterialTheme.colorScheme.onSurfaceVariant)
-                            }
+                            Icon(Icons.Filled.ChevronRight, null,
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant)
                         }
                         HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant
                             .copy(alpha = 0.5f))
@@ -147,6 +171,51 @@ fun SettingsScreen(
                 }
             }
         }
+    }
+}
+
+@Composable
+private fun ThemeSelector(currentTheme: String, onThemeSelected: (String) -> Unit) {
+    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+        listOf(
+            "System" to R.string.theme_system,
+            "Light"  to R.string.theme_light,
+            "Dark"   to R.string.theme_dark
+        ).forEach { (mode, labelRes) ->
+            FilterChip(
+                selected = currentTheme == mode,
+                onClick  = { onThemeSelected(mode) },
+                label    = { Text(stringResource(labelRes)) },
+                leadingIcon = { if (currentTheme == mode) Icon(Icons.Filled.Check, null, modifier = Modifier.size(16.dp)) }
+            )
+        }
+    }
+}
+
+@Composable
+private fun LanguageSelector() {
+    val currentLocales = AppCompatDelegate.getApplicationLocales()
+    val currentTag = if (currentLocales.isEmpty) "el" else currentLocales.toLanguageTags()
+
+    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+        FilterChip(
+            selected = currentTag.startsWith("el"),
+            onClick = {
+                val appLocale: LocaleListCompat = LocaleListCompat.forLanguageTags("el")
+                AppCompatDelegate.setApplicationLocales(appLocale)
+            },
+            label = { Text("Ελληνικά") },
+            leadingIcon = { if (currentTag.startsWith("el")) Icon(Icons.Filled.Check, null, modifier = Modifier.size(16.dp)) }
+        )
+        FilterChip(
+            selected = currentTag.startsWith("en"),
+            onClick = {
+                val appLocale: LocaleListCompat = LocaleListCompat.forLanguageTags("en")
+                AppCompatDelegate.setApplicationLocales(appLocale)
+            },
+            label = { Text("English") },
+            leadingIcon = { if (currentTag.startsWith("en")) Icon(Icons.Filled.Check, null, modifier = Modifier.size(16.dp)) }
+        )
     }
 }
 
@@ -163,18 +232,18 @@ private fun SectionCard(
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)) {
         Column {
             Row(modifier = Modifier.fillMaxWidth()
-                .padding(16.dp),
-                horizontalArrangement = Arrangement.SpaceBetween) {
-                Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                .padding(16.dp)
+                .clickable { onToggle() },
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically) {
+                Row(horizontalArrangement = Arrangement.spacedBy(10.dp), verticalAlignment = Alignment.CenterVertically) {
                     Icon(icon, null,
                         tint = if (badge) GlycoGreen else MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier.size(20.dp))
                     Text(title,
                         style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.W600))
                 }
-                IconButton(onClick = onToggle, modifier = Modifier.size(24.dp)) {
-                    Icon(if (expanded) Icons.Filled.ExpandLess else Icons.Filled.ExpandMore, null)
-                }
+                Icon(if (expanded) Icons.Filled.ExpandLess else Icons.Filled.ExpandMore, null)
             }
             if (expanded) {
                 HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
@@ -212,10 +281,10 @@ private fun ProfileEditor(profile: UserProfile, onSave: (UserProfile) -> Unit) {
     )
 
     OutlinedTextField(value = name, onValueChange = { name = it; saved = false },
-        label = { Text("Όνομα") }, modifier = Modifier.fillMaxWidth(),
+        label = { Text(stringResource(R.string.name_label)) }, modifier = Modifier.fillMaxWidth(),
         singleLine = true, colors = fieldColors)
 
-    Text("Τύπος διαβήτη", style = MaterialTheme.typography.labelMedium,
+    Text(stringResource(R.string.diabetes_type), style = MaterialTheme.typography.labelMedium,
         color = MaterialTheme.colorScheme.onSurfaceVariant)
     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
         listOf("Τύπος 1", "Τύπος 2", "LADA").forEach { t ->
@@ -224,7 +293,7 @@ private fun ProfileEditor(profile: UserProfile, onSave: (UserProfile) -> Unit) {
         }
     }
 
-    Text("Ινσουλίνη Ταχείας", style = MaterialTheme.typography.labelMedium,
+    Text(stringResource(R.string.rapid_brand), style = MaterialTheme.typography.labelMedium,
         color = MaterialTheme.colorScheme.onSurfaceVariant)
     FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
         UserProfile.RAPID_BRANDS.forEach { b ->
@@ -233,7 +302,7 @@ private fun ProfileEditor(profile: UserProfile, onSave: (UserProfile) -> Unit) {
         }
     }
 
-    Text("Ινσουλίνη Μακράς Διάρκειας (Βραδείας)", style = MaterialTheme.typography.labelMedium,
+    Text(stringResource(R.string.long_brand), style = MaterialTheme.typography.labelMedium,
         color = MaterialTheme.colorScheme.onSurfaceVariant)
     FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
         UserProfile.LONG_BRANDS.forEach { b ->
@@ -244,27 +313,27 @@ private fun ProfileEditor(profile: UserProfile, onSave: (UserProfile) -> Unit) {
 
     Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
         OutlinedTextField(value = low, onValueChange = { low = it; saved = false },
-            label = { Text("Κατώτατο mg/dL") }, modifier = Modifier.weight(1f), singleLine = true,
+            label = { Text(stringResource(R.string.target_low)) }, modifier = Modifier.weight(1f), singleLine = true,
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
         colors = fieldColors)
         OutlinedTextField(value = high, onValueChange = { high = it; saved = false },
-            label = { Text("Ανώτατο mg/dL") }, modifier = Modifier.weight(1f), singleLine = true,
+            label = { Text(stringResource(R.string.target_high)) }, modifier = Modifier.weight(1f), singleLine = true,
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
         colors = fieldColors)
     }
 
     OutlinedTextField(value = icr, onValueChange = { icr = it; saved = false },
-        label = { Text("ICR (γρ. carbs/μονάδα)") }, modifier = Modifier.fillMaxWidth(),
+        label = { Text(stringResource(R.string.icr_label)) }, modifier = Modifier.fillMaxWidth(),
         singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
         colors = fieldColors)
 
     OutlinedTextField(value = isf, onValueChange = { isf = it; saved = false },
-        label = { Text("ISF (mg/dL ανά μονάδα)") }, modifier = Modifier.fillMaxWidth(),
+        label = { Text(stringResource(R.string.isf_label)) }, modifier = Modifier.fillMaxWidth(),
         singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
         colors = fieldColors)
 
     OutlinedTextField(value = basal, onValueChange = { basal = it; saved = false },
-        label = { Text("Βασική ινσουλίνη (μον./ημ.)") }, modifier = Modifier.fillMaxWidth(),
+        label = { Text(stringResource(R.string.basal_label)) }, modifier = Modifier.fillMaxWidth(),
         singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
         colors = fieldColors)
 
@@ -286,7 +355,7 @@ private fun ProfileEditor(profile: UserProfile, onSave: (UserProfile) -> Unit) {
         modifier = Modifier.fillMaxWidth(),
         colors = if (saved) ButtonDefaults.buttonColors(containerColor = GlycoGreen)
         else ButtonDefaults.buttonColors()
-    ) { Text(if (saved) "✓ Αποθηκεύτηκε" else "Αποθήκευση αλλαγών") }
+    ) { Text(if (saved) stringResource(R.string.saved_success) else stringResource(R.string.save_changes)) }
 }
 
 @Composable
@@ -310,7 +379,6 @@ private fun CgmEditor(viewModel: GlycoViewModel, currentSource: String) {
         cursorColor          = MaterialTheme.colorScheme.primary
     )
 
-    // Pre-fill email from saved prefs
     val savedEmail by viewModel.repo.prefs.lluEmail.collectAsState(initial = "")
     LaunchedEffect(savedEmail) { if (email.isBlank()) email = savedEmail }
 
@@ -321,7 +389,7 @@ private fun CgmEditor(viewModel: GlycoViewModel, currentSource: String) {
                 horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 Icon(Icons.Filled.CheckCircle, null, tint = GlycoGreen,
                     modifier = Modifier.size(18.dp))
-                Text("Συνδεδεμένο: $currentSource",
+                Text(stringResource(R.string.cgm_connected, currentSource),
                     style = MaterialTheme.typography.bodySmall, color = GlycoGreen)
             }
         }
@@ -331,7 +399,7 @@ private fun CgmEditor(viewModel: GlycoViewModel, currentSource: String) {
         Tab(selected = tab == 0, onClick = { tab = 0 }, text = { Text("LibreLinkUp") })
         Tab(selected = tab == 1, onClick = { tab = 1 }, text = { Text("Dexcom") })
         Tab(selected = tab == 2, onClick = { tab = 2 }, text = { Text("Nightscout") })
-        Tab(selected = tab == 3, onClick = { tab = 3 }, text = { Text("Χειροκίνητα") })
+        Tab(selected = tab == 3, onClick = { tab = 3 }, text = { Text(stringResource(R.string.glucose)) })
     }
 
     Spacer(Modifier.height(4.dp))
@@ -339,12 +407,12 @@ private fun CgmEditor(viewModel: GlycoViewModel, currentSource: String) {
     when (tab) {
         0 -> {
             OutlinedTextField(value = email, onValueChange = { email = it },
-                label = { Text("Email LibreView") }, modifier = Modifier.fillMaxWidth(),
+                label = { Text(stringResource(R.string.email_label)) }, modifier = Modifier.fillMaxWidth(),
                 singleLine = true,
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
         colors = fieldColors)
             OutlinedTextField(value = password, onValueChange = { password = it },
-                label = { Text("Κωδικός") }, modifier = Modifier.fillMaxWidth(),
+                label = { Text(stringResource(R.string.password_label)) }, modifier = Modifier.fillMaxWidth(),
                 singleLine = true,
                 visualTransformation = if (showPass) VisualTransformation.None else PasswordVisualTransformation(),
                 trailingIcon = {
@@ -370,11 +438,9 @@ private fun CgmEditor(viewModel: GlycoViewModel, currentSource: String) {
                     scope.launch {
                         when (val r = viewModel.repo.lluLogin(email, password, region)) {
                             is LluResult.Success -> {
-                                // Schedule background polling + immediate sync
-                                CgmSyncWorker.schedule(
-                                    viewModel.repo.prefs.context)
+                                CgmSyncWorker.schedule(viewModel.repo.prefs.context)
                                 viewModel.syncNow()
-                                msg = "✓ Συνδέθηκε! Φορτώνω δεδομένα…"
+                                msg = "✓ Success!"
                                 loading = false
                             }
                             is LluResult.Error   -> {
@@ -390,7 +456,7 @@ private fun CgmEditor(viewModel: GlycoViewModel, currentSource: String) {
                 if (loading) CircularProgressIndicator(modifier = Modifier.size(16.dp),
                     strokeWidth = 2.dp, color = MaterialTheme.colorScheme.onPrimary)
                 Spacer(Modifier.width(8.dp))
-                Text(if (loading) "Σύνδεση…" else "Αποθήκευση & Σύνδεση")
+                Text(if (loading) stringResource(R.string.connecting) else stringResource(R.string.save_connect))
             }
 
             if (currentSource == "LLU") {
@@ -399,11 +465,10 @@ private fun CgmEditor(viewModel: GlycoViewModel, currentSource: String) {
                     modifier = Modifier.fillMaxWidth(),
                     colors = ButtonDefaults.outlinedButtonColors(
                         contentColor = MaterialTheme.colorScheme.error)
-                ) { Text("Αποσύνδεση") }
+                ) { Text(stringResource(R.string.disconnect)) }
             }
         }
         1 -> {
-            // Dexcom Share
             var dexUser    by remember { mutableStateOf("") }
             var dexPass    by remember { mutableStateOf("") }
             var dexShowPass by remember { mutableStateOf(false) }
@@ -415,18 +480,18 @@ private fun CgmEditor(viewModel: GlycoViewModel, currentSource: String) {
             LaunchedEffect(savedDexUser) { if (dexUser.isBlank()) dexUser = savedDexUser }
 
             Spacer(Modifier.height(4.dp))
-            Text("Χρησιμοποίησε τα στοιχεία σύνδεσης της εφαρμογής Dexcom G6/G7.",
+            Text(stringResource(R.string.dexcom_hint),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant)
 
             OutlinedTextField(value = dexUser, onValueChange = { dexUser = it },
-                label = { Text("Username Dexcom") }, modifier = Modifier.fillMaxWidth(),
+                label = { Text(stringResource(R.string.dexcom_user)) }, modifier = Modifier.fillMaxWidth(),
                 singleLine = true,
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
                 colors = fieldColors)
 
             OutlinedTextField(value = dexPass, onValueChange = { dexPass = it },
-                label = { Text("Κωδικός Dexcom") }, modifier = Modifier.fillMaxWidth(),
+                label = { Text(stringResource(R.string.dexcom_pass)) }, modifier = Modifier.fillMaxWidth(),
                 singleLine = true,
                 visualTransformation = if (dexShowPass) VisualTransformation.None
                     else PasswordVisualTransformation(),
@@ -438,13 +503,12 @@ private fun CgmEditor(viewModel: GlycoViewModel, currentSource: String) {
                 },
                 colors = fieldColors)
 
-            // Region
-            Text("Περιοχή:", style = MaterialTheme.typography.labelMedium,
+            Text("Region:", style = MaterialTheme.typography.labelMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant)
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 listOf(
-                    DexcomRegion.OUS to "Ευρώπη (OUS)",
-                    DexcomRegion.US  to "ΗΠΑ (US)"
+                    DexcomRegion.OUS to "EU (OUS)",
+                    DexcomRegion.US  to "US"
                 ).forEach { (r, label) ->
                     FilterChip(selected = dexRegion == r, onClick = { dexRegion = r },
                         label = { Text(label) })
@@ -466,7 +530,7 @@ private fun CgmEditor(viewModel: GlycoViewModel, currentSource: String) {
                             is DexcomResult.Success -> {
                                 CgmSyncWorker.schedule(viewModel.repo.prefs.context)
                                 viewModel.syncNow()
-                                dexMsg = "✓ Συνδέθηκε Dexcom!"; dexLoading = false
+                                dexMsg = "✓ Connected!"; dexLoading = false
                             }
                             is DexcomResult.Error -> {
                                 dexMsg = "✗ ${r.msg}"; dexLoading = false
@@ -480,7 +544,7 @@ private fun CgmEditor(viewModel: GlycoViewModel, currentSource: String) {
                 if (dexLoading) CircularProgressIndicator(modifier = Modifier.size(16.dp),
                     strokeWidth = 2.dp, color = MaterialTheme.colorScheme.onPrimary)
                 Spacer(Modifier.width(8.dp))
-                Text(if (dexLoading) "Σύνδεση…" else "Σύνδεση Dexcom")
+                Text(if (dexLoading) stringResource(R.string.connecting) else stringResource(R.string.save_connect))
             }
 
             if (currentSource == "DEXCOM") {
@@ -489,12 +553,11 @@ private fun CgmEditor(viewModel: GlycoViewModel, currentSource: String) {
                     modifier = Modifier.fillMaxWidth(),
                     colors = ButtonDefaults.outlinedButtonColors(
                         contentColor = MaterialTheme.colorScheme.error)
-                ) { Text("Αποσύνδεση") }
+                ) { Text(stringResource(R.string.disconnect)) }
             }
         }
 
         2 -> {
-            // Nightscout
             var nsUrl    by remember { mutableStateOf("https://") }
             var nsSecret by remember { mutableStateOf("") }
             var nsToken  by remember { mutableStateOf("") }
@@ -510,13 +573,13 @@ private fun CgmEditor(viewModel: GlycoViewModel, currentSource: String) {
             LaunchedEffect(savedToken)  { if (nsToken.isBlank()) nsToken = savedToken }
 
             OutlinedTextField(value = nsUrl, onValueChange = { nsUrl = it },
-                label = { Text("Nightscout URL") },
+                label = { Text(stringResource(R.string.ns_url)) },
                 placeholder = { Text("https://mysite.fly.dev") },
                 modifier = Modifier.fillMaxWidth(), singleLine = true,
         colors = fieldColors)
 
             OutlinedTextField(value = nsSecret, onValueChange = { nsSecret = it },
-                label = { Text("API Secret (προαιρετικό)") },
+                label = { Text(stringResource(R.string.ns_secret)) },
                 modifier = Modifier.fillMaxWidth(), singleLine = true,
                 visualTransformation = if (showSecret) VisualTransformation.None
                     else PasswordVisualTransformation(),
@@ -529,12 +592,12 @@ private fun CgmEditor(viewModel: GlycoViewModel, currentSource: String) {
         colors = fieldColors)
 
             OutlinedTextField(value = nsToken, onValueChange = { nsToken = it },
-                label = { Text("Access Token (εναλλακτικά)") },
+                label = { Text(stringResource(R.string.ns_token)) },
                 placeholder = { Text("glyco-xxxxxxxxxxxx") },
                 modifier = Modifier.fillMaxWidth(), singleLine = true,
         colors = fieldColors)
 
-            Text("Χρησιμοποίησε API Secret ή Access Token — όχι και τα δύο.",
+            Text(stringResource(R.string.ns_hint),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant)
 
@@ -551,7 +614,7 @@ private fun CgmEditor(viewModel: GlycoViewModel, currentSource: String) {
                     scope.launch {
                         when (val r = viewModel.repo.nightscoutTest(nsUrl, nsSecret, nsToken)) {
                             is NsResult.Success ->
-                                { nsMsg = "✓ Συνδέθηκε: ${r.data}"; nsLoading = false }
+                                { nsMsg = "✓ Connected: ${r.data}"; nsLoading = false }
                             is NsResult.Error ->
                                 { nsMsg = "✗ ${r.msg}"; nsLoading = false }
                         }
@@ -563,17 +626,17 @@ private fun CgmEditor(viewModel: GlycoViewModel, currentSource: String) {
                 if (nsLoading) CircularProgressIndicator(modifier = Modifier.size(16.dp),
                     strokeWidth = 2.dp, color = MaterialTheme.colorScheme.onPrimary)
                 Spacer(Modifier.width(8.dp))
-                Text(if (nsLoading) "Σύνδεση…" else "Δοκιμή & Αποθήκευση")
+                Text(if (nsLoading) stringResource(R.string.connecting) else stringResource(R.string.save_connect))
             }
         }
         3 -> {
-            Text("Χειροκίνητη λειτουργία — χωρίς αυτόματο συγχρονισμό.",
+            Text(stringResource(R.string.manual_mode_hint),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant)
             Button(
                 onClick = { scope.launch { viewModel.repo.prefs.clearCgm() } },
                 modifier = Modifier.fillMaxWidth()
-            ) { Text("Μετάβαση σε χειροκίνητη λειτουργία") }
+            ) { Text(stringResource(R.string.switch_manual)) }
         }
     }
 }
@@ -601,14 +664,13 @@ private fun AlertEditor(viewModel: GlycoViewModel) {
         cursorColor          = MaterialTheme.colorScheme.primary
     )
 
-    // ── Hypo alert ────────────────────────────────────────────────────────────
     Row(modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically) {
         Column(modifier = Modifier.weight(1f)) {
-            Text("🚨 Ειδοποίηση Υπογλυκαιμίας",
+            Text("🚨 Hypoglycemia Alert",
                 style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.W600))
-            Text("Ήχος alarm + vibration + bypass σίγαση",
+            Text("Alarm sound + vibration + bypass silence",
                 style = MaterialTheme.typography.labelSmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
@@ -629,25 +691,24 @@ private fun AlertEditor(viewModel: GlycoViewModel) {
         OutlinedTextField(
             value           = hypoStr,
             onValueChange   = { hypoStr = it; saved = false },
-            label           = { Text("Κατώφλι (mg/dL)") },
+            label           = { Text(stringResource(R.string.target_low)) },
             modifier        = Modifier.fillMaxWidth(),
             singleLine      = true,
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-            supportingText  = { Text("Προτεινόμενο: 70 mg/dL") },
+            supportingText  = { Text("Recommended: 70 mg/dL") },
             colors          = fieldColors
         )
     }
 
     HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
 
-    // ── Hyper alert ───────────────────────────────────────────────────────────
     Row(modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically) {
         Column(modifier = Modifier.weight(1f)) {
-            Text("↑ Ειδοποίηση Υπεργλυκαιμίας",
+            Text("↑ Hyperglycemia Alert",
                 style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.W600))
-            Text("Notification με ήχο + vibration",
+            Text("Notification with sound + vibration",
                 style = MaterialTheme.typography.labelSmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
@@ -668,25 +729,24 @@ private fun AlertEditor(viewModel: GlycoViewModel) {
         OutlinedTextField(
             value           = hyperStr,
             onValueChange   = { hyperStr = it; saved = false },
-            label           = { Text("Κατώφλι (mg/dL)") },
+            label           = { Text(stringResource(R.string.target_high)) },
             modifier        = Modifier.fillMaxWidth(),
             singleLine      = true,
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-            supportingText  = { Text("Προτεινόμενο: 180–250 mg/dL") },
+            supportingText  = { Text("Recommended: 180–250 mg/dL") },
             colors          = fieldColors
         )
     }
 
     HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
 
-    // ── Smartwatch ────────────────────────────────────────────────────────────
     Row(modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically) {
         Column(modifier = Modifier.weight(1f)) {
             Text("⌚ Wear OS Smartwatch",
                 style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.W600))
-            Text("Αποστολή γλυκόζης στο ρολόι σου",
+            Text("Send glucose to your watch",
                 style = MaterialTheme.typography.labelSmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
@@ -708,11 +768,11 @@ private fun AlertEditor(viewModel: GlycoViewModel) {
             color = MaterialTheme.colorScheme.surfaceVariant) {
             Column(modifier = Modifier.padding(12.dp),
                 verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                Text("📲 Εγκατάσταση στο watch:",
+                Text("📲 Install on watch:",
                     style = MaterialTheme.typography.labelMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant)
                 Text("1. Android Studio → Build → wear\n" +
-                    "2. Σύνδεσε Wear OS watch μέσω WiFi\n" +
+                    "2. Connect Wear OS watch via WiFi\n" +
                     "3. Watchface → Complications → GlycoMate",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant)
@@ -720,7 +780,6 @@ private fun AlertEditor(viewModel: GlycoViewModel) {
         }
     }
 
-    // ── Save button ───────────────────────────────────────────────────────────
     if (!saved || hypoStr.isNotBlank() || hyperStr.isNotBlank()) {
         Button(
             onClick = {
@@ -735,6 +794,6 @@ private fun AlertEditor(viewModel: GlycoViewModel) {
             modifier = Modifier.fillMaxWidth(),
             colors   = if (saved) ButtonDefaults.buttonColors(containerColor = GlycoGreen)
                        else ButtonDefaults.buttonColors()
-        ) { Text(if (saved) "✓ Αποθηκεύτηκε" else "Αποθήκευση ορίων") }
+        ) { Text(if (saved) stringResource(R.string.saved_success) else stringResource(R.string.save_changes)) }
     }
 }

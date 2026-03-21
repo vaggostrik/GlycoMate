@@ -8,6 +8,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.*
 import com.glycomate.app.gamification.Badge
@@ -64,9 +65,9 @@ fun BadgeUnlockedDialog(badge: Badge, onDismiss: () -> Unit) {
             Column(horizontalAlignment = Alignment.CenterHorizontally,
                 modifier = Modifier.fillMaxWidth(),
                 verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                Text(badge.name,
+                Text(stringResource(badge.nameRes),
                     style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.W600))
-                Text(badge.description,
+                Text(stringResource(badge.descRes),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant)
                 Spacer(Modifier.height(4.dp))
@@ -88,7 +89,7 @@ fun BadgeUnlockedDialog(badge: Badge, onDismiss: () -> Unit) {
 
 // ── Level Up Dialog ───────────────────────────────────────────────────────────
 @Composable
-fun LevelUpDialog(level: Int, title: String, onDismiss: () -> Unit) {
+fun LevelUpDialog(level: Int, titleRes: Int, onDismiss: () -> Unit) {
     AlertDialog(
         onDismissRequest = onDismiss,
         title = {
@@ -107,7 +108,7 @@ fun LevelUpDialog(level: Int, title: String, onDismiss: () -> Unit) {
                 Text("Level $level",
                     style = MaterialTheme.typography.displaySmall.copy(fontWeight = FontWeight.W700),
                     color = GlycoPurple)
-                Text(title,
+                Text(stringResource(titleRes),
                     style = MaterialTheme.typography.titleMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant)
             }

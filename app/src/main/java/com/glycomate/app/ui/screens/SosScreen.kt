@@ -6,6 +6,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.*
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -21,10 +22,12 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.*
+import com.glycomate.app.R
 import com.glycomate.app.sos.*
 import com.glycomate.app.ui.theme.*
 import com.glycomate.app.viewmodel.GlycoViewModel
@@ -47,13 +50,11 @@ fun SosScreen(viewModel: GlycoViewModel) {
     var showAddContact   by remember { mutableStateOf(false) }
     var thresholdStr     by remember(threshold) { mutableStateOf(threshold.toInt().toString()) }
 
-    // Permission launchers
     val locationPerm = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions()) { }
     val smsPerm = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestPermission()) { }
 
-    // Request permissions on first open
     LaunchedEffect(Unit) {
         locationPerm.launch(arrayOf(
             Manifest.permission.ACCESS_FINE_LOCATION,
@@ -63,7 +64,7 @@ fun SosScreen(viewModel: GlycoViewModel) {
 
     Scaffold(topBar = {
         TopAppBar(
-            title = { Text("SOS & Ασφάλεια",
+            title = { Text(stringResource(R.string.sos_title),
                 style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.W700)) },
             colors = TopAppBarDefaults.topAppBarColors(
                 containerColor = MaterialTheme.colorScheme.background))
@@ -75,30 +76,29 @@ fun SosScreen(viewModel: GlycoViewModel) {
             verticalArrangement = Arrangement.spacedBy(14.dp)
         ) {
 
-            // SOS result banner
             item {
                 AnimatedVisibility(visible = sosTriggerState !is SosUiState.Idle,
                     enter = fadeIn() + slideInVertically()) {
                     when (val s = sosTriggerState) {
                         is SosUiState.Success ->
                             AlertCard(
-                                title = "✅ SOS Εστάλη!",
-                                body  = "Ειδοποιήθηκαν ${s.contacts} επαφές" +
-                                    if (s.locationSent) " με GPS τοποθεσία." else ".",
+                                title = stringResource(R.string.sos_sent_success),
+                                body  = stringResource(R.string.sos_sent_body, s.contacts, 
+                                    if (s.locationSent) stringResource(R.string.gps_location_sent) else "."),
                                 color = GlycoGreen,
                                 onDismiss = { sosTriggerState = SosUiState.Idle }
                             )
                         is SosUiState.Error ->
                             AlertCard(
-                                title = "⚠️ Πρόβλημα",
+                                title = stringResource(R.string.sos_problem),
                                 body  = s.message,
                                 color = GlycoRed,
                                 onDismiss = { sosTriggerState = SosUiState.Idle }
                             )
                         is SosUiState.NoContacts ->
                             AlertCard(
-                                title = "Δεν υπάρχουν επαφές",
-                                body  = "Πρόσθεσε τουλάχιστον μία επαφή έκτακτης ανάγκης.",
+                                title = stringResource(R.string.no_contacts_title),
+                                body  = stringResource(R.string.no_contacts_body),
                                 color = GlycoAmber,
                                 onDismiss = { sosTriggerState = SosUiState.Idle }
                             )
@@ -107,7 +107,6 @@ fun SosScreen(viewModel: GlycoViewModel) {
                 }
             }
 
-            // SOS panic button
             item {
                 Card(modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(20.dp),
@@ -117,9 +116,9 @@ fun SosScreen(viewModel: GlycoViewModel) {
                         horizontalAlignment = Alignment.CenterHorizontally,
                         verticalArrangement = Arrangement.spacedBy(14.dp)) {
 
-                        Text("Κουμπί Πανικού",
+                        Text(stringResource(R.string.panic_button_title),
                             style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.W600))
-                        Text("Αποστολή GPS + SMS σε όλες τις επαφές ανάγκης",
+                        Text(stringResource(R.string.panic_button_subtitle),
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                             textAlign = TextAlign.Center)
@@ -146,23 +145,21 @@ fun SosScreen(viewModel: GlycoViewModel) {
                 }
             }
 
-            // Contacts header
             item {
                 Row(modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically) {
-                    Text("ΕΠΑΦΕΣ ΑΝΑΓΚΗΣ",
+                    Text(stringResource(R.string.emergency_contacts_header),
                         style = MaterialTheme.typography.labelSmall.copy(letterSpacing = 1.sp),
                         color = MaterialTheme.colorScheme.onSurfaceVariant)
                     TextButton(onClick = { showAddContact = true }) {
                         Icon(Icons.Filled.Add, null, modifier = Modifier.size(16.dp))
                         Spacer(Modifier.width(4.dp))
-                        Text("Προσθήκη")
+                        Text(stringResource(R.string.add_contact))
                     }
                 }
             }
 
-            // Contact list
             if (contacts.isEmpty()) {
                 item {
                     Card(modifier = Modifier.fillMaxWidth(),
@@ -172,11 +169,11 @@ fun SosScreen(viewModel: GlycoViewModel) {
                             horizontalAlignment = Alignment.CenterHorizontally) {
                             Text("👥", fontSize = 36.sp)
                             Spacer(Modifier.height(8.dp))
-                            Text("Δεν υπάρχουν επαφές ακόμα",
+                            Text(stringResource(R.string.no_contacts_yet),
                                 style = MaterialTheme.typography.bodyMedium,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant)
                             Spacer(Modifier.height(4.dp))
-                            Text("Πρόσθεσε γιατρό, οικογένεια ή φίλο",
+                            Text(stringResource(R.string.add_contact_hint),
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant)
                         }
@@ -194,9 +191,8 @@ fun SosScreen(viewModel: GlycoViewModel) {
                 }
             }
 
-            // Auto-trigger settings
             item {
-                Text("ΑΥΤΟΜΑΤΗ ΕΝΕΡΓΟΠΟΙΗΣΗ",
+                Text(stringResource(R.string.auto_trigger_header),
                     style = MaterialTheme.typography.labelSmall.copy(letterSpacing = 1.sp),
                     color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
@@ -213,10 +209,10 @@ fun SosScreen(viewModel: GlycoViewModel) {
                             horizontalArrangement = Arrangement.SpaceBetween,
                             verticalAlignment = Alignment.CenterVertically) {
                             Column(modifier = Modifier.weight(1f)) {
-                                Text("Αυτόματο SOS",
+                                Text(stringResource(R.string.auto_sos_title),
                                     style = MaterialTheme.typography.bodyMedium.copy(
                                         fontWeight = FontWeight.W500))
-                                Text("Αποστολή αυτόματα όταν γλυκόζη < κατώφλι",
+                                Text(stringResource(R.string.auto_sos_subtitle),
                                     style = MaterialTheme.typography.bodySmall,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant)
                             }
@@ -243,15 +239,14 @@ fun SosScreen(viewModel: GlycoViewModel) {
                                             it.toFloatOrNull() ?: 55f)
                                     }
                                 },
-                                label         = { Text("Κατώφλι (mg/dL)") },
+                                label         = { Text(stringResource(R.string.threshold_label)) },
                                 modifier      = Modifier.fillMaxWidth(),
                                 singleLine    = true,
                                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                                supportingText  = { Text("Προτεινόμενο: 55 mg/dL") }
+                                supportingText  = { Text(stringResource(R.string.threshold_recommended)) }
                             )
                         }
 
-                        // Info
                         Surface(shape = RoundedCornerShape(8.dp),
                             color = MaterialTheme.colorScheme.surfaceVariant) {
                             Row(modifier = Modifier.padding(10.dp),
@@ -259,8 +254,7 @@ fun SosScreen(viewModel: GlycoViewModel) {
                                 Icon(Icons.Filled.Info, null,
                                     tint = MaterialTheme.colorScheme.onSurfaceVariant,
                                     modifier = Modifier.size(16.dp))
-                                Text("Το αυτόματο SOS ενεργοποιείται από τον " +
-                                    "συγχρονισμό CGM όταν η γλυκόζη είναι επικίνδυνα χαμηλή.",
+                                Text(stringResource(R.string.sos_info_text),
                                     style = MaterialTheme.typography.bodySmall,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant)
                             }
@@ -271,7 +265,6 @@ fun SosScreen(viewModel: GlycoViewModel) {
         }
     }
 
-    // Add contact dialog
     if (showAddContact) {
         AddContactDialog(
             onAdd = { contact ->
@@ -284,7 +277,6 @@ fun SosScreen(viewModel: GlycoViewModel) {
     }
 }
 
-// ── SOS Button ────────────────────────────────────────────────────────────────
 @Composable
 private fun PulsingSOSButton(isSending: Boolean, onClick: () -> Unit) {
     val infiniteTransition = rememberInfiniteTransition(label = "sos")
@@ -315,7 +307,6 @@ private fun PulsingSOSButton(isSending: Boolean, onClick: () -> Unit) {
     }
 }
 
-// ── Contact Card ──────────────────────────────────────────────────────────────
 @Composable
 private fun ContactCard(contact: SosContact, onDelete: () -> Unit) {
     var confirmDelete by remember { mutableStateOf(false) }
@@ -351,11 +342,11 @@ private fun ContactCard(contact: SosContact, onDelete: () -> Unit) {
                     TextButton(onClick = { confirmDelete = false },
                         colors = ButtonDefaults.textButtonColors(
                             contentColor = MaterialTheme.colorScheme.onSurfaceVariant)) {
-                        Text("Άκυρο")
+                        Text(stringResource(R.string.cancel))
                     }
                     Button(onClick = onDelete,
                         colors = ButtonDefaults.buttonColors(containerColor = GlycoRed)) {
-                        Text("Διαγραφή")
+                        Text(stringResource(R.string.delete))
                     }
                 }
             } else {
@@ -369,7 +360,6 @@ private fun ContactCard(contact: SosContact, onDelete: () -> Unit) {
     }
 }
 
-// ── Alert card ────────────────────────────────────────────────────────────────
 @Composable
 private fun AlertCard(
     title: String, body: String,
@@ -398,7 +388,6 @@ private fun AlertCard(
     }
 }
 
-// ── Add contact dialog ────────────────────────────────────────────────────────
 @Composable
 private fun AddContactDialog(onAdd: (SosContact) -> Unit, onDismiss: () -> Unit) {
     var name  by remember { mutableStateOf("") }
@@ -407,22 +396,22 @@ private fun AddContactDialog(onAdd: (SosContact) -> Unit, onDismiss: () -> Unit)
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Νέα επαφή ανάγκης") },
+        title = { Text(stringResource(R.string.new_contact_title)) },
         text  = {
             Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                 OutlinedTextField(value = name, onValueChange = { name = it },
-                    label = { Text("Όνομα") }, modifier = Modifier.fillMaxWidth(),
+                    label = { Text(stringResource(R.string.name_label)) }, modifier = Modifier.fillMaxWidth(),
                     singleLine = true,
                     leadingIcon = { Icon(Icons.Filled.Person, null) })
                 OutlinedTextField(value = phone, onValueChange = { phone = it },
-                    label = { Text("Τηλέφωνο") }, modifier = Modifier.fillMaxWidth(),
+                    label = { Text(stringResource(R.string.phone_label)) }, modifier = Modifier.fillMaxWidth(),
                     singleLine = true,
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
                     leadingIcon = { Icon(Icons.Filled.Phone, null) })
                 OutlinedTextField(value = role, onValueChange = { role = it },
-                    label = { Text("Ρόλος (προαιρετικό)") }, modifier = Modifier.fillMaxWidth(),
+                    label = { Text(stringResource(R.string.role_label)) }, modifier = Modifier.fillMaxWidth(),
                     singleLine = true,
-                    placeholder = { Text("π.χ. Γιατρός, Σύζυγος") })
+                    placeholder = { Text(stringResource(R.string.role_placeholder)) })
             }
         },
         confirmButton = {
@@ -430,13 +419,12 @@ private fun AddContactDialog(onAdd: (SosContact) -> Unit, onDismiss: () -> Unit)
                 onClick  = { onAdd(SosContact(name = name.trim(), phone = phone.trim(),
                     role = role.trim())) },
                 enabled  = name.isNotBlank() && phone.isNotBlank()
-            ) { Text("Προσθήκη") }
+            ) { Text(stringResource(R.string.add_contact)) }
         },
-        dismissButton = { TextButton(onClick = onDismiss) { Text("Άκυρο") } }
+        dismissButton = { TextButton(onClick = onDismiss) { Text(stringResource(R.string.cancel)) } }
     )
 }
 
-// ── UI State ──────────────────────────────────────────────────────────────────
 sealed class SosUiState {
     object Idle                                                         : SosUiState()
     object Sending                                                      : SosUiState()

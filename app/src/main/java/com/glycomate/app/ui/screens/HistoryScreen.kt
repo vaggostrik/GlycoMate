@@ -11,8 +11,10 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.*
+import com.glycomate.app.R
 import com.glycomate.app.data.model.*
 import com.glycomate.app.ui.theme.*
 import com.glycomate.app.viewmodel.GlycoViewModel
@@ -23,7 +25,11 @@ import java.util.*
 @Composable
 fun HistoryScreen(viewModel: GlycoViewModel) {
     var selectedTab by remember { mutableIntStateOf(0) }
-    val tabs = listOf("Γλυκόζη", "Ινσουλίνη", "Γεύματα")
+    val tabs = listOf(
+        stringResource(R.string.tab_glucose),
+        stringResource(R.string.tab_insulin),
+        stringResource(R.string.tab_meals)
+    )
 
     val allReadings by viewModel.allReadings.collectAsState()
     val allInsulin  by viewModel.allInsulin.collectAsState()
@@ -33,7 +39,7 @@ fun HistoryScreen(viewModel: GlycoViewModel) {
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Ιστορικό",
+                title = { Text(stringResource(R.string.history_title),
                     style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.W700)) },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.background)
@@ -85,13 +91,13 @@ private fun WeeklyStatsCard(readings: List<GlucoseReading>, profile: UserProfile
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)) {
         Column(modifier = Modifier.padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            Text("Τελευταίες 7 ημέρες",
+            Text(stringResource(R.string.last_7_days),
                 style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.W600))
             Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-                StatItem("Μ.Ο.", "${avg.toInt()} mg/dL", MaterialTheme.colorScheme.primary)
-                StatItem("TIR",  "${tir.toInt()}%",       GlycoGreen)
-                StatItem("Χαμηλή", "${low.toInt()}%",     GlycoRed)
-                StatItem("Υψηλή",  "${high.toInt()}%",    GlycoAmber)
+                StatItem(stringResource(R.string.avg_label), "${avg.toInt()} mg/dL", MaterialTheme.colorScheme.primary)
+                StatItem(stringResource(R.string.tir_label),  "${tir.toInt()}%",       GlycoGreen)
+                StatItem(stringResource(R.string.low_label), "${low.toInt()}%",     GlycoRed)
+                StatItem(stringResource(R.string.high_label),  "${high.toInt()}%",    GlycoAmber)
             }
             // TIR bar
             LinearProgressIndicator(
@@ -99,7 +105,7 @@ private fun WeeklyStatsCard(readings: List<GlucoseReading>, profile: UserProfile
                 modifier = Modifier.fillMaxWidth().height(6.dp),
                 color    = GlycoGreen,
                 trackColor = MaterialTheme.colorScheme.surfaceVariant)
-            Text("${weekData.size} μετρήσεις",
+            Text(stringResource(R.string.total_logs_count, weekData.size),
                 style = MaterialTheme.typography.labelSmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
@@ -118,9 +124,9 @@ private fun StatItem(label: String, value: String, color: Color) {
 
 @Composable
 private fun GlucoseList(readings: List<GlucoseReading>, onDelete: (GlucoseReading) -> Unit) {
-    val sdf = SimpleDateFormat("EEE d MMM  HH:mm", Locale("el"))
+    val sdf = SimpleDateFormat("EEE d MMM  HH:mm", Locale.getDefault())
     if (readings.isEmpty()) {
-        EmptyState("Δεν υπάρχουν μετρήσεις γλυκόζης")
+        EmptyState(stringResource(R.string.empty_glucose))
         return
     }
     LazyColumn(contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
@@ -157,8 +163,8 @@ private fun GlucoseList(readings: List<GlucoseReading>, onDelete: (GlucoseReadin
 
 @Composable
 private fun InsulinList(entries: List<InsulinEntry>, onDelete: (InsulinEntry) -> Unit) {
-    val sdf = SimpleDateFormat("EEE d MMM  HH:mm", Locale("el"))
-    if (entries.isEmpty()) { EmptyState("Δεν υπάρχουν καταγραφές ινσουλίνης"); return }
+    val sdf = SimpleDateFormat("EEE d MMM  HH:mm", Locale.getDefault())
+    if (entries.isEmpty()) { EmptyState(stringResource(R.string.empty_insulin)); return }
     LazyColumn(contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
         verticalArrangement = Arrangement.spacedBy(6.dp)) {
         items(entries, key = { it.id }) { e ->
@@ -189,8 +195,8 @@ private fun InsulinList(entries: List<InsulinEntry>, onDelete: (InsulinEntry) ->
 
 @Composable
 private fun MealList(entries: List<MealEntry>, onDelete: (MealEntry) -> Unit) {
-    val sdf = SimpleDateFormat("EEE d MMM  HH:mm", Locale("el"))
-    if (entries.isEmpty()) { EmptyState("Δεν υπάρχουν καταγραφές γευμάτων"); return }
+    val sdf = SimpleDateFormat("EEE d MMM  HH:mm", Locale.getDefault())
+    if (entries.isEmpty()) { EmptyState(stringResource(R.string.empty_meals)); return }
     LazyColumn(contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
         verticalArrangement = Arrangement.spacedBy(6.dp)) {
         items(entries, key = { it.id }) { e ->
@@ -207,7 +213,7 @@ private fun MealList(entries: List<MealEntry>, onDelete: (MealEntry) -> Unit) {
                                 style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.W600))
                             Text("${e.carbsGrams.toInt()}g carbs" +
                                 if (e.suggestedInsulinUnits > 0f)
-                                    "  •  Πρόταση: ${String.format("%.1f", e.suggestedInsulinUnits)}U"
+                                    "  •  ${stringResource(R.string.suggested_label, e.suggestedInsulinUnits)}"
                                 else "",
                                 style = MaterialTheme.typography.labelSmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant)

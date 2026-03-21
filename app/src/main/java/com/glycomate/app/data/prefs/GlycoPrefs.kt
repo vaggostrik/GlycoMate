@@ -7,20 +7,14 @@ import androidx.datastore.preferences.preferencesDataStore
 import com.glycomate.app.data.model.UserProfile
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
 
 val Context.dataStore: DataStore<Preferences> by preferencesDataStore("glycomate_prefs")
 
-/**
- * PrefKeys — only NON-SENSITIVE data.
- * Passwords, tokens, API keys → SecureStorage (EncryptedSharedPreferences).
- */
 object PrefKeys {
-    // Onboarding
     val ONBOARDING_DONE  = booleanPreferencesKey("onboarding_done")
-
-    // User profile
     val USER_NAME        = stringPreferencesKey("user_name")
     val DIABETES_TYPE    = stringPreferencesKey("diabetes_type")
     val TARGET_LOW       = floatPreferencesKey("target_low")
@@ -30,42 +24,30 @@ object PrefKeys {
     val BASAL_UNITS      = floatPreferencesKey("basal_units")
     val RAPID_BRAND      = stringPreferencesKey("rapid_insulin_brand")
     val LONG_BRAND       = stringPreferencesKey("long_insulin_brand")
-
-    // CGM source + non-sensitive config
-    val CGM_SOURCE       = stringPreferencesKey("cgm_source")   // "LLU" | "NIGHTSCOUT" | "NONE"
+    val CGM_SOURCE       = stringPreferencesKey("cgm_source")
     val LLU_EMAIL        = stringPreferencesKey("llu_email")
     val LLU_REGION       = stringPreferencesKey("llu_region")
     val NS_URL           = stringPreferencesKey("ns_url")
-
-    // Dexcom Share
     val DEXCOM_USERNAME  = stringPreferencesKey("dexcom_username")
     val DEXCOM_REGION    = stringPreferencesKey("dexcom_region")
-
-    // Insulin
     val DIA              = floatPreferencesKey("dia")
-
-    // Alert thresholds
     val ALERT_HYPO         = floatPreferencesKey("alert_hypo")
     val ALERT_HYPER        = floatPreferencesKey("alert_hyper")
     val ALERT_HYPO_ENABLED = booleanPreferencesKey("alert_hypo_enabled")
     val ALERT_HYPER_ENABLED= booleanPreferencesKey("alert_hyper_enabled")
     val WATCH_ENABLED      = booleanPreferencesKey("watch_enabled")
-
-    // SOS
     val SOS_CONTACTS     = stringPreferencesKey("sos_contacts")
     val SOS_AUTO_TRIGGER = booleanPreferencesKey("sos_auto_trigger")
     val SOS_THRESHOLD    = floatPreferencesKey("sos_threshold")
-
-    // Secure key change signals (timestamps; actual values live in SecureStorage)
     val OPENAI_KEY_UPDATED = longPreferencesKey("openai_key_updated")
+
+    // Theme preference: "System" | "Light" | "Dark"
+    val APP_THEME        = stringPreferencesKey("app_theme")
 }
 
 class GlycoPrefs(val context: Context) {
-
-    // SecureStorage handles all encrypted sensitive values
     val secure = SecureStorage(context)
 
-    // ── Onboarding ────────────────────────────────────────────────────────────
     val onboardingDone: Flow<Boolean> = context.dataStore.data
         .map { it[PrefKeys.ONBOARDING_DONE] ?: false }
 
@@ -73,7 +55,13 @@ class GlycoPrefs(val context: Context) {
         it[PrefKeys.ONBOARDING_DONE] = true
     }
 
-    // ── User profile ──────────────────────────────────────────────────────────
+    val appTheme: Flow<String> = context.dataStore.data
+        .map { it[PrefKeys.APP_THEME] ?: "System" }
+
+    suspend fun saveAppTheme(theme: String) = context.dataStore.edit {
+        it[PrefKeys.APP_THEME] = theme
+    }
+
     val userProfile: Flow<UserProfile> = context.dataStore.data.map { p ->
         UserProfile(
             name              = p[PrefKeys.USER_NAME]     ?: "",
@@ -102,25 +90,15 @@ class GlycoPrefs(val context: Context) {
         it[PrefKeys.DIA]           = profile.dia
     }
 
-    // ── CGM source ────────────────────────────────────────────────────────────
     val cgmSource: Flow<String> = context.dataStore.data
         .map { it[PrefKeys.CGM_SOURCE] ?: "NONE" }
 
-    // ── LibreLinkUp (email + region in DataStore, password+token in SecureStorage) ──
-    val lluEmail:  Flow<String> = context.dataStore.data.map { it[PrefKeys.LLU_EMAIL]  ?: "" }
+    // ── LibreLinkUp ──────────────────────────────────────────────────────────
+    val lluEmail: Flow<String> = context.dataStore.data.map { it[PrefKeys.LLU_EMAIL] ?: "" }
     val lluRegion: Flow<String> = context.dataStore.data.map { it[PrefKeys.LLU_REGION] ?: "EU" }
-
-    // Password and token come from SecureStorage (synchronous — called from IO coroutine)
-    fun getLluPassword() = secure.lluPassword
-    fun getLluToken()    = secure.lluToken
-    fun getLluExpiry()   = secure.lluTokenExpiry
-    fun getLluPatientId() = secure.lluPatientId
-
-    // Legacy Flow accessors for WorkManager compatibility
-    val lluPassword:    Flow<String> = context.dataStore.data.map { secure.lluPassword }
-    val lluToken:       Flow<String> = context.dataStore.data.map { secure.lluToken }
-    val lluTokenExpiry: Flow<Long>   = context.dataStore.data.map { secure.lluTokenExpiry }
-    val lluPatientId:   Flow<String> = context.dataStore.data.map { secure.lluPatientId }
+    val lluPassword: Flow<String> = flow { emit(withContext(Dispatchers.IO) { secure.lluPassword }) }
+    val lluToken: Flow<String> = flow { emit(withContext(Dispatchers.IO) { secure.lluToken }) }
+    val lluTokenExpiry: Flow<Long> = flow { emit(withContext(Dispatchers.IO) { secure.lluTokenExpiry }) }
 
     suspend fun saveLluCredentials(email: String, password: String, region: String) {
         context.dataStore.edit {
@@ -128,7 +106,6 @@ class GlycoPrefs(val context: Context) {
             it[PrefKeys.LLU_REGION] = region
             it[PrefKeys.CGM_SOURCE] = "LLU"
         }
-        // Password goes to encrypted storage
         withContext(Dispatchers.IO) { secure.lluPassword = password }
     }
 
@@ -136,28 +113,29 @@ class GlycoPrefs(val context: Context) {
         withContext(Dispatchers.IO) {
             secure.lluToken       = token
             secure.lluTokenExpiry = expiry
-            if (patientId.isNotBlank()) secure.lluPatientId = patientId
+            secure.lluPatientId   = patientId
         }
     }
 
-    // ── Nightscout (URL in DataStore, secret+token in SecureStorage) ───────────
-    val nsUrl: Flow<String> = context.dataStore.data.map { it[PrefKeys.NS_URL] ?: "" }
-    val nsSecret: Flow<String> = context.dataStore.data.map { secure.nsSecret }
-    val nsToken:  Flow<String> = context.dataStore.data.map { secure.nsToken  }
-
-    // ── Dexcom Share ──────────────────────────────────────────────────────────
+    // ── Dexcom ───────────────────────────────────────────────────────────────
     val dexcomUsername: Flow<String> = context.dataStore.data.map { it[PrefKeys.DEXCOM_USERNAME] ?: "" }
-    val dexcomRegion:   Flow<String> = context.dataStore.data.map { it[PrefKeys.DEXCOM_REGION]   ?: "OUS" }
-    fun getDexcomPassword() = secure.dexcomPassword
+    val dexcomRegion: Flow<String> = context.dataStore.data.map { it[PrefKeys.DEXCOM_REGION] ?: "OUS" }
 
-    suspend fun saveDexcomCredentials(username: String, password: String, region: String) {
+    suspend fun getDexcomPassword(): String = withContext(Dispatchers.IO) { secure.dexcomPassword }
+
+    suspend fun saveDexcomCredentials(username: String, pass: String, region: String) {
         context.dataStore.edit {
             it[PrefKeys.DEXCOM_USERNAME] = username
             it[PrefKeys.DEXCOM_REGION]   = region
             it[PrefKeys.CGM_SOURCE]      = "DEXCOM"
         }
-        withContext(Dispatchers.IO) { secure.dexcomPassword = password }
+        withContext(Dispatchers.IO) { secure.dexcomPassword = pass }
     }
+
+    // ── Nightscout ────────────────────────────────────────────────────────────
+    val nsUrl: Flow<String> = context.dataStore.data.map { it[PrefKeys.NS_URL] ?: "" }
+    val nsSecret: Flow<String> = flow { emit(withContext(Dispatchers.IO) { secure.nsSecret }) }
+    val nsToken: Flow<String> = flow { emit(withContext(Dispatchers.IO) { secure.nsToken }) }
 
     suspend fun saveNightscoutConfig(url: String, secret: String, token: String) {
         context.dataStore.edit {
@@ -170,25 +148,19 @@ class GlycoPrefs(val context: Context) {
         }
     }
 
-    // ── OpenAI (secure) ───────────────────────────────────────────────────────
-    // Reads from SecureStorage; the OPENAI_KEY_UPDATED timestamp acts as a signal
-    // to re-emit whenever the key is saved (since DataStore doesn't know about SecureStorage writes).
     val openAiKey: Flow<String> = context.dataStore.data.map { secure.openAiKey }
 
     suspend fun saveOpenAiKey(key: String) {
         withContext(Dispatchers.IO) { secure.openAiKey = key }
-        // Touch DataStore so the Flow above re-emits with the new key value
         context.dataStore.edit { it[PrefKeys.OPENAI_KEY_UPDATED] = System.currentTimeMillis() }
     }
 
-    // ── Alerts ────────────────────────────────────────────────────────────────
     val alertHypo:         Flow<Float>   = context.dataStore.data.map { it[PrefKeys.ALERT_HYPO]          ?: 70f }
     val alertHyper:        Flow<Float>   = context.dataStore.data.map { it[PrefKeys.ALERT_HYPER]         ?: 250f }
     val alertHypoEnabled:  Flow<Boolean> = context.dataStore.data.map { it[PrefKeys.ALERT_HYPO_ENABLED]  ?: true }
     val alertHyperEnabled: Flow<Boolean> = context.dataStore.data.map { it[PrefKeys.ALERT_HYPER_ENABLED] ?: true }
     val watchEnabled:      Flow<Boolean> = context.dataStore.data.map { it[PrefKeys.WATCH_ENABLED]       ?: true }
 
-    // ── SOS ───────────────────────────────────────────────────────────────────
     val sosContacts:    Flow<String>  = context.dataStore.data.map { it[PrefKeys.SOS_CONTACTS]     ?: "[]" }
     val sosAutoTrigger: Flow<Boolean> = context.dataStore.data.map { it[PrefKeys.SOS_AUTO_TRIGGER] ?: false }
     val sosThreshold:   Flow<Float>   = context.dataStore.data.map { it[PrefKeys.SOS_THRESHOLD]    ?: 55f }
@@ -202,9 +174,8 @@ class GlycoPrefs(val context: Context) {
         it[PrefKeys.SOS_THRESHOLD]    = threshold
     }
 
-    // ── Clear CGM ─────────────────────────────────────────────────────────────
     suspend fun clearCgm() {
         context.dataStore.edit { it[PrefKeys.CGM_SOURCE] = "NONE" }
-        withContext(Dispatchers.IO) { secure.clearLlu() }
+        withContext(Dispatchers.IO) { secure.clearAll() }
     }
 }

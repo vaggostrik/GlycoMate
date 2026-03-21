@@ -3,9 +3,6 @@ package com.glycomate.app.ui.screens
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
@@ -13,9 +10,11 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.scale
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.*
+import com.glycomate.app.R
 import com.glycomate.app.gamification.*
 import com.glycomate.app.ui.theme.*
 import com.glycomate.app.viewmodel.GlycoViewModel
@@ -24,7 +23,7 @@ import com.glycomate.app.viewmodel.GlycoViewModel
 @Composable
 fun BuddyScreen(viewModel: GlycoViewModel) {
     val gamState by viewModel.gamificationState.collectAsState()
-    val message  by produceState(initialValue = BuddyMessage("Γεια σου! 👋", BuddyMood.HAPPY)) {
+    val buddyMsg by produceState(initialValue = BuddyMessage(R.string.buddy_greeting, mood = BuddyMood.HAPPY)) {
         value = viewModel.gamif.getBuddyMessage()
     }
 
@@ -32,7 +31,6 @@ fun BuddyScreen(viewModel: GlycoViewModel) {
         contentPadding = PaddingValues(16.dp),
         verticalArrangement = Arrangement.spacedBy(14.dp)
     ) {
-        // Avatar card
         item {
             Card(modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(20.dp),
@@ -46,27 +44,30 @@ fun BuddyScreen(viewModel: GlycoViewModel) {
                         accessories = gamState.buddyAccessories
                     )
 
-                    Text("Glyco", style = MaterialTheme.typography.headlineSmall
+                    Text(stringResource(R.string.buddy_name), style = MaterialTheme.typography.headlineSmall
                         .copy(fontWeight = FontWeight.W700))
 
-                    // Mood badge
-                    val (moodText, moodColor) = when (gamState.buddyMood) {
-                        BuddyMood.VERY_HAPPY -> "Πολύ χαρούμενος! 🎉" to GlycoGreen
-                        BuddyMood.HAPPY      -> "Χαρούμενος 😊" to GlycoGreen
-                        BuddyMood.NEUTRAL    -> "Εντάξει 🤔" to GlycoAmber
-                        BuddyMood.SAD        -> "Στεναχωρημένος 😔" to GlycoAmber
-                        BuddyMood.WORRIED    -> "Ανήσυχος ⚠️" to GlycoRed
+                    val (moodRes, moodColor) = when (gamState.buddyMood) {
+                        BuddyMood.VERY_HAPPY -> R.string.mood_very_happy to GlycoGreen
+                        BuddyMood.HAPPY      -> R.string.mood_happy to GlycoGreen
+                        BuddyMood.NEUTRAL    -> R.string.mood_neutral to GlycoAmber
+                        BuddyMood.SAD        -> R.string.mood_sad to GlycoAmber
+                        BuddyMood.WORRIED    -> R.string.mood_worried to GlycoRed
                     }
                     Surface(shape = RoundedCornerShape(20.dp), color = moodColor.copy(alpha = 0.15f)) {
-                        Text(moodText, style = MaterialTheme.typography.labelLarge, color = moodColor,
+                        Text(stringResource(moodRes), style = MaterialTheme.typography.labelLarge, color = moodColor,
                             modifier = Modifier.padding(horizontal = 16.dp, vertical = 6.dp))
                     }
 
-                    // Speech bubble
                     Surface(modifier = Modifier.fillMaxWidth(),
                         shape = RoundedCornerShape(0.dp, 12.dp, 12.dp, 12.dp),
                         color = MaterialTheme.colorScheme.surfaceVariant) {
-                        Text(message.text,
+                        val msgText = if (buddyMsg.args.isEmpty()) {
+                            stringResource(buddyMsg.resId)
+                        } else {
+                            stringResource(buddyMsg.resId, *buddyMsg.args.toTypedArray())
+                        }
+                        Text(msgText,
                             style = MaterialTheme.typography.bodyMedium,
                             modifier = Modifier.padding(14.dp))
                     }
@@ -74,19 +75,16 @@ fun BuddyScreen(viewModel: GlycoViewModel) {
             }
         }
 
-        // XP & Level card
         item {
             XpLevelCard(state = gamState)
         }
 
-        // Streak card
         item {
             StreakCard(streakDays = gamState.streakDays)
         }
 
-        // Badges
         item {
-            Text("BADGES", style = MaterialTheme.typography.labelSmall
+            Text(stringResource(R.string.badges_title), style = MaterialTheme.typography.labelSmall
                 .copy(letterSpacing = 1.sp),
                 color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
@@ -97,7 +95,6 @@ fun BuddyScreen(viewModel: GlycoViewModel) {
     }
 }
 
-// ── Avatar ────────────────────────────────────────────────────────────────────
 @Composable
 private fun BuddyAvatar(mood: BuddyMood, accessories: Set<String>) {
     val scale by rememberInfiniteTransition(label = "buddy").animateFloat(
@@ -122,7 +119,6 @@ private fun BuddyAvatar(mood: BuddyMood, accessories: Set<String>) {
                 Text(emoji, fontSize = 52.sp)
             }
         }
-        // Accessories
         if ("crown" in accessories) {
             Text("👑", fontSize = 20.sp,
                 modifier = Modifier.align(Alignment.TopCenter).offset(y = (-4).dp))
@@ -137,7 +133,6 @@ private fun BuddyAvatar(mood: BuddyMood, accessories: Set<String>) {
     }
 }
 
-// ── XP Card ───────────────────────────────────────────────────────────────────
 @Composable
 private fun XpLevelCard(state: GamificationState) {
     val progress by animateFloatAsState(
@@ -157,16 +152,16 @@ private fun XpLevelCard(state: GamificationState) {
                     verticalAlignment = Alignment.CenterVertically) {
                     Surface(shape = RoundedCornerShape(20.dp),
                         color = GlycoPurple.copy(alpha = 0.15f)) {
-                        Text("Level ${state.level} · ${state.levelTitle}",
+                        Text(stringResource(R.string.level_label, state.level, stringResource(state.levelTitleRes)),
                             style = MaterialTheme.typography.labelLarge,
                             color = GlycoPurple,
                             modifier = Modifier.padding(horizontal = 12.dp, vertical = 5.dp))
                     }
-                    Text("${state.xp} XP",
+                    Text(stringResource(R.string.xp_label, state.xp),
                         style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.W600))
                 }
                 if (state.streakDays > 0) {
-                    Text("🔥 ${state.streakDays} μέρες",
+                    Text(stringResource(R.string.streak_days_label, state.streakDays),
                         style = MaterialTheme.typography.labelMedium,
                         color = GlycoAmber)
                 }
@@ -180,10 +175,10 @@ private fun XpLevelCard(state: GamificationState) {
 
             Row(modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween) {
-                Text("${state.xpProgressInLevel} / ${state.xpNeededForNextLevel} XP",
+                Text(stringResource(R.string.xp_progress, state.xpProgressInLevel, state.xpNeededForNextLevel),
                     style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant)
-                Text("→ Level ${state.level + 1}",
+                Text(stringResource(R.string.next_level, state.level + 1),
                     style = MaterialTheme.typography.labelSmall,
                     color = GlycoPurple)
             }
@@ -191,7 +186,6 @@ private fun XpLevelCard(state: GamificationState) {
     }
 }
 
-// ── Streak Card ───────────────────────────────────────────────────────────────
 @Composable
 private fun StreakCard(streakDays: Int) {
     Card(modifier = Modifier.fillMaxWidth(),
@@ -202,13 +196,12 @@ private fun StreakCard(streakDays: Int) {
             Row(modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically) {
-                Text("Streak",
+                Text(stringResource(R.string.streak_title),
                     style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.W600))
-                Text("🔥 $streakDays μέρες",
+                Text(stringResource(R.string.streak_days_label, streakDays),
                     style = MaterialTheme.typography.titleSmall,
                     color = if (streakDays > 0) GlycoAmber else MaterialTheme.colorScheme.onSurfaceVariant)
             }
-            // 14-day streak dots
             val displayDays = 14
             Row(modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(4.dp)) {
@@ -224,36 +217,33 @@ private fun StreakCard(streakDays: Int) {
             }
             val nextMilestone = listOf(7, 14, 30).firstOrNull { it > streakDays }
             if (nextMilestone != null) {
-                Text("${nextMilestone - streakDays} μέρες ακόμα για το επόμενο milestone",
+                Text(stringResource(R.string.next_milestone, nextMilestone - streakDays),
                     style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant)
             } else {
-                Text("Απίστευτο! Πάνω από 30 μέρες! 🏆",
+                Text(stringResource(R.string.legendary_streak),
                     style = MaterialTheme.typography.labelSmall, color = GlycoAmber)
             }
         }
     }
 }
 
-// ── Badges Grid ───────────────────────────────────────────────────────────────
 @Composable
 private fun BadgesGrid(state: GamificationState) {
     val allBadges = ALL_BADGES
 
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        // Earned
         val earned = allBadges.filter { it.id in state.earnedBadgeIds }
         if (earned.isNotEmpty()) {
-            Text("Κερδήθηκαν (${earned.size})",
+            Text(stringResource(R.string.earned_badges, earned.size),
                 style = MaterialTheme.typography.labelSmall,
                 color = GlycoAmber)
             BadgeRow(badges = earned, earned = true)
         }
 
-        // Unearned
         val unearned = allBadges.filter { it.id !in state.earnedBadgeIds }
         if (unearned.isNotEmpty()) {
-            Text("Κλειδωμένα (${unearned.size})",
+            Text(stringResource(R.string.locked_badges, unearned.size),
                 style = MaterialTheme.typography.labelSmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant)
             BadgeRow(badges = unearned, earned = false)
@@ -263,7 +253,6 @@ private fun BadgesGrid(state: GamificationState) {
 
 @Composable
 private fun BadgeRow(badges: List<Badge>, earned: Boolean) {
-    // Fixed height grid — avoid nested scroll
     val rows = badges.chunked(4)
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
         rows.forEach { row ->
@@ -272,7 +261,6 @@ private fun BadgeRow(badges: List<Badge>, earned: Boolean) {
                 row.forEach { badge ->
                     BadgeItem(badge = badge, earned = earned, modifier = Modifier.weight(1f))
                 }
-                // Fill empty slots
                 repeat(4 - row.size) {
                     Spacer(modifier = Modifier.weight(1f))
                 }
@@ -291,15 +279,14 @@ private fun BadgeItem(badge: Badge, earned: Boolean, modifier: Modifier = Modifi
         Column(modifier = Modifier.padding(8.dp).fillMaxWidth(),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(4.dp)) {
-            Text(badge.emoji, fontSize = 24.sp,
-                modifier = Modifier.let { if (!earned) it else it })
-            Text(badge.name,
+            Text(badge.emoji, fontSize = 24.sp)
+            Text(stringResource(badge.nameRes),
                 style = MaterialTheme.typography.labelSmall,
                 color = if (earned) GlycoAmber else MaterialTheme.colorScheme.onSurfaceVariant,
                 textAlign = TextAlign.Center,
                 maxLines = 2)
             if (earned) {
-                Text("+${badge.xpReward} XP",
+                Text(stringResource(R.string.xp_reward, badge.xpReward),
                     style = MaterialTheme.typography.labelSmall,
                     color = GlycoPurple)
             }

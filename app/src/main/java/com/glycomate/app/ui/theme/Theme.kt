@@ -28,7 +28,6 @@ private val DarkScheme = darkColorScheme(
     tertiaryContainer   = Color(0xFF4A2080),
     onTertiaryContainer = Color(0xFFE8D5FF),
 
-    // Backgrounds — slightly lighter than pitch black for readability
     background       = Color(0xFF121212),
     onBackground     = Color(0xFFE8E8E8),
 
@@ -82,9 +81,15 @@ private val LightScheme = lightColorScheme(
 
 @Composable
 fun GlycoMateTheme(
-    dark: Boolean = isSystemInDarkTheme(),
+    theme: String = "System",
     content: @Composable () -> Unit
 ) {
+    val dark = when (theme) {
+        "Dark"  -> true
+        "Light" -> false
+        else    -> isSystemInDarkTheme()
+    }
+
     MaterialTheme(
         colorScheme = if (dark) DarkScheme else LightScheme,
         content     = content

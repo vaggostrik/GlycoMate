@@ -22,12 +22,14 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.*
 import com.glycomate.app.data.model.*
 import com.glycomate.app.ui.theme.*
 import com.glycomate.app.viewmodel.GlycoViewModel
+import com.glycomate.app.R
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -56,9 +58,9 @@ fun DashboardScreen(
             TopAppBar(
                 title = {
                     Column {
-                        Text("GlycoMate",
+                        Text(stringResource(R.string.dashboard_title),
                             style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.W700))
-                        Text(SimpleDateFormat("EEEE d MMMM", Locale("el")).format(Date()),
+                        Text(SimpleDateFormat("EEEE d MMMM", Locale.getDefault()).format(Date()),
                             style = MaterialTheme.typography.labelSmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant)
                     }
@@ -69,7 +71,7 @@ fun DashboardScreen(
                             if (state.isSyncing)
                                 CircularProgressIndicator(modifier = Modifier.size(20.dp), strokeWidth = 2.dp)
                             else
-                                Icon(Icons.Filled.Sync, "Συγχρονισμός")
+                                Icon(Icons.Filled.Sync, stringResource(R.string.sync_desc))
                         }
                     }
                 },
@@ -94,7 +96,6 @@ fun DashboardScreen(
             )
         }
     ) { padding ->
-        // Dim background when FAB is expanded
         Box(modifier = Modifier.fillMaxSize()) {
             LazyColumn(
                 modifier = Modifier.fillMaxSize().padding(padding).padding(horizontal = 16.dp),
@@ -117,7 +118,7 @@ fun DashboardScreen(
                         Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant), modifier = Modifier.fillMaxWidth()) {
                             Row(modifier = Modifier.padding(14.dp), horizontalArrangement = Arrangement.spacedBy(10.dp), verticalAlignment = Alignment.CenterVertically) {
                                 Icon(Icons.Filled.Sensors, null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
-                                Text("Δεν έχεις συνδέσει CGM. Πήγαινε στις Ρυθμίσεις για να συνδέσεις LibreLinkUp.", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                Text(stringResource(R.string.no_cgm_connected), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                             }
                         }
                     }
@@ -127,18 +128,18 @@ fun DashboardScreen(
                 item { MiniXpBar(xp = gamState.xp, level = gamState.level, progressFraction = gamState.progressFraction, streakDays = gamState.streakDays) }
                 item {
                     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                        StatCard("Time in Range", "${state.todayTir.toInt()}%", if (state.todayTir >= 70f) GlycoGreen else GlycoAmber, modifier = Modifier.weight(1f))
+                        StatCard(stringResource(R.string.time_in_range), "${state.todayTir.toInt()}%", if (state.todayTir >= 70f) GlycoGreen else GlycoAmber, modifier = Modifier.weight(1f))
                         InsulinStatCard(iob = state.iob, basalToday = state.basalToday, modifier = Modifier.weight(1f))
-                        StatCard("Μετρήσεις", "${state.todayReadings.size}", MaterialTheme.colorScheme.tertiary, modifier = Modifier.weight(1f))
+                        StatCard(stringResource(R.string.measurements), "${state.todayReadings.size}", MaterialTheme.colorScheme.tertiary, modifier = Modifier.weight(1f))
                     }
                 }
-                item { Text("ΣΗΜΕΡΙΝΕΣ ΕΓΓΡΑΦΕΣ", style = MaterialTheme.typography.labelSmall.copy(letterSpacing = 1.sp), color = MaterialTheme.colorScheme.onSurfaceVariant) }
+                item { Text(stringResource(R.string.today_logs), style = MaterialTheme.typography.labelSmall.copy(letterSpacing = 1.sp), color = MaterialTheme.colorScheme.onSurfaceVariant) }
 
                 val timeline = buildTimeline(allReadings, allInsulin, allMeals)
                 if (timeline.isEmpty()) {
                     item {
                         Box(modifier = Modifier.fillMaxWidth().padding(32.dp), contentAlignment = Alignment.Center) {
-                            Text("Δεν υπάρχουν εγγραφές ακόμα.\nΠάτησε + για να ξεκινήσεις!", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                            Text(stringResource(R.string.no_logs_yet), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
                         }
                     }
                 } else {
@@ -155,7 +156,6 @@ fun DashboardScreen(
         }
     }
 
-    // Dialogs
     if (showAddGlucose) AddGlucoseDialog(onConfirm = { v, ts -> viewModel.logGlucose(v, ts); showAddGlucose = false }, onDismiss = { showAddGlucose = false })
     if (showAddInsulin) AddInsulinDialog(profile = state.profile, onConfirm = { u, t, b, ts -> viewModel.logInsulin(u, t, b, ts); showAddInsulin = false }, onDismiss = { showAddInsulin = false })
     if (showAddMeal) AddMealDialog(calculateBolus = viewModel::calculateBolus, onConfirm = { d, c, ts -> viewModel.logMeal(d, c, ts); showAddMeal = false }, onDismiss = { showAddMeal = false })
@@ -172,18 +172,16 @@ fun ExpandableFabMenu(
     val rotation by animateFloatAsState(if (expanded) 45f else 0f)
 
     Column(horizontalAlignment = Alignment.End, verticalArrangement = Arrangement.spacedBy(12.dp)) {
-        // Sub-buttons
         AnimatedVisibility(visible = expanded, enter = fadeIn() + expandVertically(), exit = fadeOut() + shrinkVertically()) {
             Column(horizontalAlignment = Alignment.End, verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                FabMenuItem(label = "AI Σκανάρισμα", icon = Icons.Filled.AutoAwesome, color = GlycoAmber, onClick = { onAction(FabAction.AI_SCAN) })
-                FabMenuItem(label = "Barcode", icon = Icons.Filled.QrCodeScanner, color = MaterialTheme.colorScheme.tertiary, onClick = { onAction(FabAction.BARCODE) })
-                FabMenuItem(label = "Γεύμα", icon = Icons.Filled.Restaurant, color = MaterialTheme.colorScheme.secondary, onClick = { onAction(FabAction.MEAL) })
-                FabMenuItem(label = "Ινσουλίνη", icon = Icons.Filled.Colorize, color = GlycoBlue, onClick = { onAction(FabAction.INSULIN) })
-                FabMenuItem(label = "Γλυκόζη", icon = Icons.Filled.Add, color = MaterialTheme.colorScheme.primary, onClick = { onAction(FabAction.GLUCOSE) })
+                FabMenuItem(label = stringResource(R.string.ai_scan), icon = Icons.Filled.AutoAwesome, color = GlycoAmber, onClick = { onAction(FabAction.AI_SCAN) })
+                FabMenuItem(label = stringResource(R.string.barcode), icon = Icons.Filled.QrCodeScanner, color = MaterialTheme.colorScheme.tertiary, onClick = { onAction(FabAction.BARCODE) })
+                FabMenuItem(label = stringResource(R.string.meal), icon = Icons.Filled.Restaurant, color = MaterialTheme.colorScheme.secondary, onClick = { onAction(FabAction.MEAL) })
+                FabMenuItem(label = stringResource(R.string.rapid_insulin), icon = Icons.Filled.Colorize, color = GlycoBlue, onClick = { onAction(FabAction.INSULIN) })
+                FabMenuItem(label = stringResource(R.string.glucose), icon = Icons.Filled.Add, color = MaterialTheme.colorScheme.primary, onClick = { onAction(FabAction.GLUCOSE) })
             }
         }
 
-        // Main FAB
         FloatingActionButton(
             onClick = onToggle,
             containerColor = if (expanded) MaterialTheme.colorScheme.surfaceVariant else MaterialTheme.colorScheme.primary,
@@ -206,20 +204,19 @@ fun FabMenuItem(label: String, icon: ImageVector, color: Color, onClick: () -> U
     }
 }
 
-// ── Hero card ─────────────────────────────────────────────────────────────────
 @Composable
 private fun GlucoseHeroCard(reading: GlucoseReading?, profile: UserProfile) {
-    val (value, color, statusText) = when {
-        reading == null                               -> Triple("—", MaterialTheme.colorScheme.onSurfaceVariant, "Χωρίς δεδομένα")
-        reading.valueMgDl < profile.targetLow        -> Triple("${reading.valueMgDl.toInt()}", GlycoRed, "Χαμηλή ⚠")
-        reading.valueMgDl > profile.targetHigh       -> Triple("${reading.valueMgDl.toInt()}", GlycoAmber, "Υψηλή ↑")
-        else                                         -> Triple("${reading.valueMgDl.toInt()}", GlycoGreen, "Εντός στόχου ✓")
+    val (value, color, statusRes) = when {
+        reading == null                         -> Triple("—", MaterialTheme.colorScheme.onSurfaceVariant, R.string.no_data)
+        reading.valueMgDl < profile.targetLow   -> Triple("${reading.valueMgDl.toInt()}", GlycoRed, R.string.low_status)
+        reading.valueMgDl > profile.targetHigh  -> Triple("${reading.valueMgDl.toInt()}", GlycoAmber, R.string.high_status)
+        else                                    -> Triple("${reading.valueMgDl.toInt()}", GlycoGreen, R.string.in_range_status)
     }
 
     Card(modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)) {
         Column(modifier = Modifier.padding(20.dp)) {
-            Text("Γλυκόζη τώρα",
+            Text(stringResource(R.string.glucose_now),
                 style = MaterialTheme.typography.labelMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant)
             Spacer(Modifier.height(4.dp))
@@ -236,13 +233,13 @@ private fun GlucoseHeroCard(reading: GlucoseReading?, profile: UserProfile) {
             }
             Spacer(Modifier.height(6.dp))
             Surface(shape = RoundedCornerShape(20.dp), color = color.copy(alpha = 0.15f)) {
-                Text(statusText, style = MaterialTheme.typography.labelMedium, color = color,
+                Text(stringResource(statusRes), style = MaterialTheme.typography.labelMedium, color = color,
                     modifier = Modifier.padding(horizontal = 12.dp, vertical = 5.dp))
             }
             if (reading != null) {
                 Spacer(Modifier.height(8.dp))
-                Text("Πηγή: ${reading.source.name}  •  ${
-                    SimpleDateFormat("HH:mm", Locale.getDefault()).format(Date(reading.timestampMs))}",
+                Text(stringResource(R.string.source_label, reading.source.name) + "  •  " +
+                    SimpleDateFormat("HH:mm", Locale.getDefault()).format(Date(reading.timestampMs)),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
@@ -250,7 +247,6 @@ private fun GlucoseHeroCard(reading: GlucoseReading?, profile: UserProfile) {
     }
 }
 
-// ── Stat card ─────────────────────────────────────────────────────────────────
 @Composable
 private fun StatCard(label: String, value: String, color: Color, modifier: Modifier = Modifier, subtitle: String? = null) {
     Card(modifier = modifier, shape = RoundedCornerShape(12.dp),
@@ -270,13 +266,12 @@ private fun StatCard(label: String, value: String, color: Color, modifier: Modif
     }
 }
 
-// ── Insulin breakdown card (rapid IOB + basal today) ──────────────────────────
 @Composable
 private fun InsulinStatCard(iob: Float, basalToday: Float, modifier: Modifier = Modifier) {
     Card(modifier = modifier, shape = RoundedCornerShape(12.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)) {
         Column(modifier = Modifier.padding(12.dp)) {
-            Text("Ινσουλίνη", style = MaterialTheme.typography.labelSmall,
+            Text(stringResource(R.string.insulin), style = MaterialTheme.typography.labelSmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 1)
             Spacer(Modifier.height(4.dp))
             Row(verticalAlignment = Alignment.CenterVertically,
@@ -286,7 +281,7 @@ private fun InsulinStatCard(iob: Float, basalToday: Float, modifier: Modifier = 
                     style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.W700),
                     color = GlycoBlue)
             }
-            Text("IOB ταχείας", style = MaterialTheme.typography.labelSmall,
+            Text(stringResource(R.string.iob_label), style = MaterialTheme.typography.labelSmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant)
             Spacer(Modifier.height(4.dp))
             Row(verticalAlignment = Alignment.CenterVertically,
@@ -296,13 +291,12 @@ private fun InsulinStatCard(iob: Float, basalToday: Float, modifier: Modifier = 
                     style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.W700),
                     color = GlycoAmber)
             }
-            Text("Βραδείας σήμερα", style = MaterialTheme.typography.labelSmall,
+            Text(stringResource(R.string.basal_today_label), style = MaterialTheme.typography.labelSmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
     }
 }
 
-// ── Timeline ──────────────────────────────────────────────────────────────────
 sealed class TimelineEntry {
     data class Glucose(val r: GlucoseReading) : TimelineEntry()
     data class Insulin(val e: InsulinEntry)   : TimelineEntry()
@@ -415,7 +409,6 @@ private fun TimelineEntryCard(
     }
 }
 
-// ── Date + Time picker row (shared by all logging dialogs) ────────────────────
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DateTimePickerRow(timestampMs: Long, onTimestampChanged: (Long) -> Unit) {
@@ -493,7 +486,6 @@ fun DateTimePickerRow(timestampMs: Long, onTimestampChanged: (Long) -> Unit) {
     }
 }
 
-// ── Input dialogs ─────────────────────────────────────────────────────────────
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddGlucoseDialog(onConfirm: (Float, Long) -> Unit, onDismiss: () -> Unit) {
