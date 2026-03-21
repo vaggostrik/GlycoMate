@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<paths>
+    <cache-path name="meal_photos" path="." />
+    <external-files-path name="my_docs" path="Documents" />
+    <files-path name="internal_docs" path="." />
+</paths>
