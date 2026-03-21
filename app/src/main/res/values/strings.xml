@@ -1,0 +1,313 @@
+<resources>
+    <string name="app_name">GlycoMate</string>
+    <string name="dashboard_title">GlycoMate</string>
+    <string name="sync_desc">Sync</string>
+    <string name="no_cgm_connected">You haven\'t connected a CGM. Go to Settings to connect LibreLinkUp.</string>
+    <string name="glucose_now">Glucose now</string>
+    <string name="no_data">No data</string>
+    <string name="low_status">Low ⚠</string>
+    <string name="high_status">High ↑</string>
+    <string name="in_range_status">In range ✓</string>
+    <string name="source_label">Source: %1$s</string>
+    <string name="time_in_range">Time in Range</string>
+    <string name="measurements">Logs</string>
+    <string name="insulin">Insulin</string>
+    <string name="iob_label">Rapid IOB</string>
+    <string name="basal_today_label">Basal today</string>
+    <string name="today_logs">TODAY\'S LOGS</string>
+    <string name="no_logs_yet">No logs yet.\nTap + to start!</string>
+
+    <!-- FAB Labels -->
+    <string name="ai_scan">AI Scan</string>
+    <string name="barcode">Barcode</string>
+    <string name="meal">Meal</string>
+    <string name="rapid_insulin">Insulin</string>
+    <string name="glucose">Glucose</string>
+
+    <!-- Settings Screen -->
+    <string name="settings_title">Settings</string>
+    <string name="profile_section">Profile &amp; Parameters</string>
+    <string name="cgm_section">CGM Connection — %1$s</string>
+    <string name="cgm_inactive">Inactive</string>
+    <string name="alerts_section">Alert Thresholds</string>
+    <string name="language_section">Language</string>
+    <string name="theme_section">Appearance</string>
+    <string name="mood_tracker_title">😊 Mood Tracker</string>
+    <string name="mood_tracker_subtitle">Mood logging &amp; glucose correlation</string>
+    <string name="reminders_title">⏰ Reminders</string>
+    <string name="reminders_subtitle">Meds, logs, exercise</string>
+    <string name="pdf_report_title">📄 PDF Report</string>
+    <string name="pdf_report_subtitle">Create &amp; share report for your doctor</string>
+
+    <!-- Profile Editor -->
+    <string name="name_label">Name</string>
+    <string name="diabetes_type">Diabetes Type</string>
+    <string name="rapid_brand">Rapid Insulin Brand</string>
+    <string name="long_brand">Long-Acting Insulin Brand</string>
+    <string name="target_low">Target Low (mg/dL)</string>
+    <string name="target_high">Target High (mg/dL)</string>
+    <string name="icr_label">ICR (g carbs/unit)</string>
+    <string name="isf_label">ISF (mg/dL per unit)</string>
+    <string name="basal_label">Basal Insulin (units/day)</string>
+    <string name="save_changes">Save Changes</string>
+    <string name="saved_success">✓ Saved</string>
+
+    <!-- CGM Editor -->
+    <string name="cgm_connected">Connected: %1$s</string>
+    <string name="email_label">LibreView Email</string>
+    <string name="password_label">Password</string>
+    <string name="save_connect">Save &amp; Connect</string>
+    <string name="connecting">Connecting…</string>
+    <string name="disconnect">Disconnect</string>
+    <string name="dexcom_user">Dexcom Username</string>
+    <string name="dexcom_pass">Dexcom Password</string>
+    <string name="dexcom_hint">Use your Dexcom G6/G7 app login credentials.</string>
+    <string name="ns_url">Nightscout URL</string>
+    <string name="ns_secret">API Secret (optional)</string>
+    <string name="ns_token">Access Token (alternative)</string>
+    <string name="ns_hint">Use API Secret or Access Token — not both.</string>
+    <string name="manual_mode_hint">Manual mode — no automatic sync.</string>
+    <string name="switch_manual">Switch to Manual Mode</string>
+
+    <!-- AI Meal Scan Screen -->
+    <string name="ai_scan_title">AI Meal Scan</string>
+    <string name="back">Back</string>
+    <string name="api_key_error">Set the Groq API key (tap the 🔑)</string>
+    <string name="analyzing">Analyzing...</string>
+    <string name="analyze_button">Analyze Meal with AI</string>
+    <string name="ai_result_title">AI Result (%1$d%% confidence)</string>
+    <string name="carbs_grams">%1$dg carbs</string>
+    <string name="total_carbs">Total: %1$dg carbs</string>
+    <string name="suggested_dose">Suggested Dose: %1$.1fU</string>
+    <string name="log_button">Log</string>
+    <string name="cancel_button">Cancel</string>
+    <string name="groq_key_label">Groq API Key</string>
+    <string name="api_key_hint">API Key (gsk_...)</string>
+    <string name="save_key">Save</string>
+    <string name="camera">Camera</string>
+    <string name="gallery">Gallery</string>
+    <string name="camera_permission_error">Camera permission required</string>
+
+    <!-- History Screen -->
+    <string name="history_title">History</string>
+    <string name="tab_glucose">Glucose</string>
+    <string name="tab_insulin">Insulin</string>
+    <string name="tab_meals">Meals</string>
+    <string name="last_7_days">Last 7 days</string>
+    <string name="avg_label">Avg.</string>
+    <string name="tir_label">TIR</string>
+    <string name="low_label">Low</string>
+    <string name="high_label">High</string>
+    <string name="total_logs_count">%1$d measurements</string>
+    <string name="empty_glucose">No glucose measurements</string>
+    <string name="empty_insulin">No insulin logs</string>
+    <string name="empty_meals">No meal logs</string>
+    <string name="suggested_label">Suggestion: %1$.1fU</string>
+
+    <!-- Buddy Screen -->
+    <string name="buddy_name">Glyco</string>
+    <string name="mood_very_happy">Very Happy! 🎉</string>
+    <string name="mood_happy">Happy 😊</string>
+    <string name="mood_neutral">Neutral 🤔</string>
+    <string name="mood_sad">Sad 😔</string>
+    <string name="mood_worried">Worried ⚠️</string>
+    <string name="level_label">Level %1$d · %2$s</string>
+    <string name="xp_label">%1$d XP</string>
+    <string name="streak_days_label">🔥 %1$d days</string>
+    <string name="xp_progress">%1$d / %2$d XP</string>
+    <string name="next_level">→ Level %1$d</string>
+    <string name="streak_title">Streak</string>
+    <string name="next_milestone">%1$d more days for next milestone</string>
+    <string name="legendary_streak">Amazing! Over 30 days! 🏆</string>
+    <string name="badges_title">BADGES</string>
+    <string name="earned_badges">Earned (%1$d)</string>
+    <string name="locked_badges">Locked (%1$d)</string>
+    <string name="xp_reward">+%1$d XP</string>
+    <string name="buddy_greeting">Hello! 👋</string>
+
+    <!-- Levels -->
+    <string name="level_1">Beginner</string>
+    <string name="level_2">Observer</string>
+    <string name="level_3">Stable</string>
+    <string name="level_4">Reliable</string>
+    <string name="level_5">Advanced</string>
+    <string name="level_6">Expert</string>
+    <string name="level_7">Warrior</string>
+    <string name="level_8">Champion</string>
+    <string name="level_9">Legend</string>
+    <string name="level_10">Master</string>
+
+    <!-- Badges -->
+    <string name="badge_1_name">First Step</string>
+    <string name="badge_1_desc">First glucose log</string>
+    <string name="badge_2_name">7 Days</string>
+    <string name="badge_2_desc">7 consecutive days of logging</string>
+    <string name="badge_3_name">Iron Will</string>
+    <string name="badge_3_desc">14 consecutive days</string>
+    <string name="badge_4_name">Champion</string>
+    <string name="badge_4_desc">30 consecutive days</string>
+    <string name="badge_5_name">Perfect Day</string>
+    <string name="badge_5_desc">100% Time in Range</string>
+    <string name="badge_6_name">Star Week</string>
+    <string name="badge_6_desc">TIR > 70% for 7 days</string>
+    <string name="badge_7_name">Foodie</string>
+    <string name="badge_7_desc">First meal log</string>
+    <string name="badge_8_name">Meal Master</string>
+    <string name="badge_8_desc">50 meal logs</string>
+    <string name="badge_9_name">Insulin Pro</string>
+    <string name="badge_9_desc">100 insulin logs</string>
+    <string name="badge_10_name">Night Watch</string>
+    <string name="badge_10_desc">Log after midnight</string>
+    <string name="badge_11_name">Early Bird</string>
+    <string name="badge_11_desc">Log before 7:00 am</string>
+    <string name="badge_12_name">Connected</string>
+    <string name="badge_12_desc">CGM sensor connected</string>
+    <string name="badge_13_name">Steady as a Rock</string>
+    <string name="badge_13_desc">6 hours in range</string>
+
+    <!-- Buddy Messages -->
+    <string name="msg_perfect_30">Amazing! 30 days! You are the ultimate Champion! 👑</string>
+    <string name="msg_perfect_14">Wow! 2 weeks streak! You earn the Iron Will badge! 🛡️</string>
+    <string name="msg_perfect_7">Excellent! 7 days in a row! Keep it up! ⚡</string>
+    <string name="msg_perfect">Well done! Perfect day! Keep it up! 🏆</string>
+    <string name="msg_happy_streak">Doing great! %1$d days streak — don\'t break it! 🔥</string>
+    <string name="msg_happy">We\'re doing well! Keep your streak! 💪</string>
+    <string name="msg_neutral">It was okay today… tomorrow will be better! 🤔</string>
+    <string name="msg_sad_8">I\'m very hungry… %1$d hours without a log! What are you eating? 🍽️</string>
+    <string name="msg_sad_4">Hello! When will you remember me? Let\'s take a reading! 📊</string>
+    <string name="msg_sad">Don\'t forget to log! I\'m here 😊</string>
+    <string name="msg_worried">Careful! Your glucose needs attention now! ⚠️</string>
+
+    <!-- SOS Screen -->
+    <string name="sos_title">SOS &amp; Safety</string>
+    <string name="sos_sent_success">✅ SOS Sent!</string>
+    <string name="sos_sent_body">Notified %1$d contacts%2$s</string>
+    <string name="gps_location_sent"> with GPS location.</string>
+    <string name="sos_problem">⚠️ Problem</string>
+    <string name="no_contacts_title">No contacts</string>
+    <string name="no_contacts_body">Add at least one emergency contact.</string>
+    <string name="panic_button_title">Panic Button</string>
+    <string name="panic_button_subtitle">Send GPS + SMS to all emergency contacts</string>
+    <string name="emergency_contacts_header">EMERGENCY CONTACTS</string>
+    <string name="add_contact">Add</string>
+    <string name="no_contacts_yet">No contacts yet</string>
+    <string name="add_contact_hint">Add doctor, family or friend</string>
+    <string name="auto_trigger_header">AUTO-TRIGGER</string>
+    <string name="auto_sos_title">Automatic SOS</string>
+    <string name="auto_sos_subtitle">Send automatically when glucose &lt; threshold</string>
+    <string name="threshold_label">Threshold (mg/dL)</string>
+    <string name="threshold_recommended">Recommended: 55 mg/dL</string>
+    <string name="sos_info_text">Auto SOS is triggered by CGM sync when glucose is dangerously low.</string>
+    <string name="new_contact_title">New Emergency Contact</string>
+    <string name="phone_label">Phone</string>
+    <string name="role_label">Role (optional)</string>
+    <string name="role_placeholder">e.g. Doctor, Spouse</string>
+    <string name="cancel">Cancel</string>
+    <string name="delete">Delete</string>
+
+    <!-- Mood Tracker Screen -->
+    <string name="mood_tracker_top_title">Mood Tracker</string>
+    <string name="new_mood_action">New mood</string>
+    <string name="log_mood_action">Log mood</string>
+    <string name="glucose_correlation_hint">Glucose now: %1$d mg/dL — will correlate with your mood</string>
+    <string name="tab_today">Today</string>
+    <string name="tab_history">History</string>
+    <string name="tab_correlation">Correlation</string>
+    <string name="empty_mood_today">You haven\'t logged a mood today</string>
+    <string name="how_feel_button">How are you feeling?</string>
+    <string name="today_mood_header">TODAY\'S LOGS</string>
+    <string name="daily_summary_title">Today\'s Picture</string>
+    <string name="mood_summary_stats">Average: %1$.1f/5  •  %2$d logs</string>
+    <string name="avg_glucose_mood">Avg glucose during logs: %1$d mg/dL</string>
+    <string name="empty_mood_history">No logs yet</string>
+    <string name="no_correlation_data">No data for correlation</string>
+    <string name="correlation_hint">Log mood while having active CGM to see\nhow glucose affects your psychology.</string>
+    <string name="glucose_psychology_header">GLUCOSE &amp; PSYCHOLOGY</string>
+    <string name="correlation_stats_header">Mood comparison per glucose level (%1$d data points)</string>
+    <string name="low_glucose_bucket">Low glucose (&lt; 70)</string>
+    <string name="target_glucose_bucket">In target (70–180)</string>
+    <string name="high_glucose_bucket">High glucose (&gt; 180)</string>
+    <string name="logs_count_suffix">%1$d logs</string>
+    <string name="mgdl_avg">mg/dL avg.</string>
+    <string name="mood_avg">mood avg.</string>
+    <string name="how_feel_dialog_title">How are you feeling?</string>
+    <string name="glucose_save_hint">Glucose now: %1$d mg/dL — will be saved with log</string>
+    <string name="mood_label">Mood:</string>
+    <string name="energy_label">Energy:</string>
+    <string name="notes_label">Notes (optional)</string>
+    <string name="notes_placeholder">e.g. Tired after eating…</string>
+    <string name="save">Save</string>
+    <string name="glucose_label">Glucose: %1$d mg/dL</string>
+
+    <!-- Mood Levels -->
+    <string name="mood_very_bad">Very Bad</string>
+    <string name="mood_bad">Bad</string>
+    <string name="mood_neutral_level">Neutral</string>
+    <string name="mood_good">Good</string>
+    <string name="mood_very_good">Very Good</string>
+
+    <!-- Energy Levels -->
+    <string name="energy_exhausted">Exhausted</string>
+    <string name="energy_tired">Tired</string>
+    <string name="energy_normal">Normal</string>
+    <string name="energy_energized">Energized</string>
+    <string name="energy_hyper">Hyperactive</string>
+
+    <!-- Insights -->
+    <string name="insight_low_glucose">Your mood is negatively affected during low glucose. </string>
+    <string name="insight_high_glucose">High glucose is related to worse mood. </string>
+    <string name="insight_normal_glucose">When glucose is in target, you feel better!</string>
+
+    <!-- Reminders Screen -->
+    <string name="reminders_top_title">Reminders</string>
+    <string name="new_reminder_action">New reminder</string>
+    <string name="empty_reminders">No reminders</string>
+    <string name="add_reminder_prompt">Tap + to add</string>
+    <string name="type_glucose">Glucose Measurement</string>
+    <string name="type_medication">Medication/Insulin</string>
+    <string name="type_exercise">Exercise</string>
+    <string name="type_meal">Meal</string>
+    <string name="type_custom">Custom</string>
+    <string name="repeat_once">Once</string>
+    <string name="repeat_daily">Every day</string>
+    <string name="repeat_8h">Every 8 hours</string>
+    <string name="repeat_12h">Every 12 hours</string>
+    <string name="new_reminder_title">New Reminder</string>
+    <string name="reminder_type_label">Type:</string>
+    <string name="title_label">Title</string>
+    <string name="hour_label">HH</string>
+    <string name="minute_label">MM</string>
+    <string name="repeat_label">Repeat:</string>
+    <string name="add_button">Add</string>
+    <string name="notification_channel_reminders">Reminders</string>
+    <string name="default_notification_title">Reminder</string>
+
+    <!-- Onboarding Screen -->
+    <string name="onboarding_welcome_title">GlycoMate</string>
+    <string name="onboarding_welcome_subtitle">Your digital diabetes management</string>
+    <string name="onboarding_start_button">Let\'s Start  →</string>
+    <string name="patient_profile_title">Patient Profile</string>
+    <string name="profile_subtitle">Fill in the following for insulin dose calculation.</string>
+    <string name="diabetes_type_label">Diabetes type</string>
+    <string name="glucose_targets_title">Glucose targets (mg/dL)</string>
+    <string name="insulin_params_title">Insulin parameters</string>
+    <string name="icr_hint">e.g. 10 = 1 unit for 10g carbs</string>
+    <string name="isf_hint">e.g. 40 = 40 mg/dL decrease per unit</string>
+    <string name="next_step_button">Next  →</string>
+    <string name="connect_cgm_title">Connect CGM</string>
+    <string name="connect_cgm_subtitle">Connect your sensor for automatic readings.</string>
+    <string name="tab_manual">Manual</string>
+    <string name="cgm_credentials_hint">Use the same credentials as your LibreLink / LibreView app.</string>
+    <string name="server_region_label">Server region (Greece = EU)</string>
+    <string name="connect_start_button">Connect &amp; Start</string>
+    <string name="dexcom_credentials_hint">Use your Dexcom G6/G7 app login credentials.</string>
+    <string name="dexcom_region_label">Region (Greece = Europe OUS)</string>
+    <string name="connect_dexcom_start">Connect Dexcom &amp; Start</string>
+    <string name="manual_mode_onboarding_text">You will log readings manually. You can connect a CGM later from Settings.</string>
+    <string name="continue_manual_button">Continue without CGM</string>
+
+    <!-- Themes -->
+    <string name="theme_system">System</string>
+    <string name="theme_light">Light</string>
+    <string name="theme_dark">Dark</string>
+</resources>

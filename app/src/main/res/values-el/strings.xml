@@ -1,0 +1,313 @@
+<resources>
+    <string name="app_name">GlycoMate</string>
+    <string name="dashboard_title">GlycoMate</string>
+    <string name="sync_desc">Συγχρονισμός</string>
+    <string name="no_cgm_connected">Δεν έχεις συνδέσει CGM. Πήγαινε στις Ρυθμίσεις για να συνδέσεις LibreLinkUp.</string>
+    <string name="glucose_now">Γλυκόζη τώρα</string>
+    <string name="no_data">Χωρίς δεδομένα</string>
+    <string name="low_status">Χαμηλή ⚠</string>
+    <string name="high_status">Υψηλή ↑</string>
+    <string name="in_range_status">Εντός στόχου ✓</string>
+    <string name="source_label">Πηγή: %1$s</string>
+    <string name="time_in_range">Time in Range</string>
+    <string name="measurements">Μετρήσεις</string>
+    <string name="insulin">Ινσουλίνη</string>
+    <string name="iob_label">IOB ταχείας</string>
+    <string name="basal_today_label">Βραδείας σήμερα</string>
+    <string name="today_logs">ΣΗΜΕΡΙΝΕΣ ΕΓΓΡΑΦΕΣ</string>
+    <string name="no_logs_yet">Δεν υπάρχουν εγγραφές ακόμα.\nΠάτησε + για να ξεκινήσεις!</string>
+
+    <!-- FAB Labels -->
+    <string name="ai_scan">AI Σκανάρισμα</string>
+    <string name="barcode">Barcode</string>
+    <string name="meal">Γεύμα</string>
+    <string name="rapid_insulin">Ινσουλίνη</string>
+    <string name="glucose">Γλυκόζη</string>
+
+    <!-- Settings Screen -->
+    <string name="settings_title">Ρυθμίσεις</string>
+    <string name="profile_section">Προφίλ &amp; Παράμετροι</string>
+    <string name="cgm_section">Σύνδεση CGM — %1$s</string>
+    <string name="cgm_inactive">Ανενεργή</string>
+    <string name="alerts_section">Όρια ειδοποιήσεων</string>
+    <string name="language_section">Γλώσσα</string>
+    <string name="theme_section">Εμφάνιση</string>
+    <string name="mood_tracker_title">😊 Mood Tracker</string>
+    <string name="mood_tracker_subtitle">Καταγραφή διάθεσης &amp; συσχέτιση με γλυκόζη</string>
+    <string name="reminders_title">⏰ Υπενθυμίσεις</string>
+    <string name="reminders_subtitle">Φάρμακα, μέτρηση, άσκηση</string>
+    <string name="pdf_report_title">📄 Αναφορά PDF</string>
+    <string name="pdf_report_subtitle">Δημιουργία &amp; κοινοποίηση αναφοράς για τον γιατρό</string>
+
+    <!-- Profile Editor -->
+    <string name="name_label">Όνομα</string>
+    <string name="diabetes_type">Τύπος διαβήτη</string>
+    <string name="rapid_brand">Ινσουλίνη Ταχείας</string>
+    <string name="long_brand">Ινσουλίνη Μακράς Διάρκειας (Βραδείας)</string>
+    <string name="target_low">Κατώτατο mg/dL</string>
+    <string name="target_high">Ανώτατο mg/dL</string>
+    <string name="icr_label">ICR (γρ. carbs/μονάδα)</string>
+    <string name="isf_label">ISF (mg/dL ανά μονάδα)</string>
+    <string name="basal_label">Βασική ινσουλίνη (μον./ημ.)</string>
+    <string name="save_changes">Αποθήκευση αλλαγών</string>
+    <string name="saved_success">✓ Αποθηκεύτηκε</string>
+
+    <!-- CGM Editor -->
+    <string name="cgm_connected">Συνδεδεμένο: %1$s</string>
+    <string name="email_label">Email LibreView</string>
+    <string name="password_label">Κωδικός</string>
+    <string name="save_connect">Αποθήκευση &amp; Σύνδεση</string>
+    <string name="connecting">Σύνδεση…</string>
+    <string name="disconnect">Αποσύνδεση</string>
+    <string name="dexcom_user">Username Dexcom</string>
+    <string name="dexcom_pass">Κωδικός Dexcom</string>
+    <string name="dexcom_hint">Χρησιμοποίησε τα στοιχεία σύνδεσης της εφαρμογής Dexcom G6/G7.</string>
+    <string name="ns_url">Nightscout URL</string>
+    <string name="ns_secret">API Secret (προαιρετικό)</string>
+    <string name="ns_token">Access Token (εναλλακτικά)</string>
+    <string name="ns_hint">Χρησιμοποίησε API Secret ή Access Token — όχι και τα δύο.</string>
+    <string name="manual_mode_hint">Χειροκίνητη λειτουργία — χωρίς αυτόματο συγχρονισμό.</string>
+    <string name="switch_manual">Μετάβαση σε χειροκίνητη λειτουργία</string>
+
+    <!-- AI Meal Scan Screen -->
+    <string name="ai_scan_title">AI Σκανάρισμα γεύματος</string>
+    <string name="back">Πίσω</string>
+    <string name="api_key_error">Βάλε το Groq API key (πάτα το 🔑)</string>
+    <string name="analyzing">Ανάλυση...</string>
+    <string name="analyze_button">Ανάλυση γεύματος με AI</string>
+    <string name="ai_result_title">Αποτέλεσμα AI (%1$d%% εμπιστοσύνη)</string>
+    <string name="carbs_grams">%1$dg carbs</string>
+    <string name="total_carbs">Σύνολο: %1$dg υδατάνθρακες</string>
+    <string name="suggested_dose">Προτεινόμενη δόση: %1$.1fU</string>
+    <string name="log_button">Καταγραφή</string>
+    <string name="cancel_button">Ακύρωση</string>
+    <string name="groq_key_label">Groq API Key</string>
+    <string name="api_key_hint">API Key (gsk_...)</string>
+    <string name="save_key">Αποθήκευση</string>
+    <string name="camera">Κάμερα</string>
+    <string name="gallery">Γκαλερί</string>
+    <string name="camera_permission_error">Απαιτείται άδεια κάμερας</string>
+
+    <!-- History Screen -->
+    <string name="history_title">Ιστορικό</string>
+    <string name="tab_glucose">Γλυκόζη</string>
+    <string name="tab_insulin">Ινσουλίνη</string>
+    <string name="tab_meals">Γεύματα</string>
+    <string name="last_7_days">Τελευταίες 7 ημέρες</string>
+    <string name="avg_label">Μ.Ο.</string>
+    <string name="tir_label">TIR</string>
+    <string name="low_label">Χαμηλή</string>
+    <string name="high_label">Υψηλή</string>
+    <string name="total_logs_count">%1$d μετρήσεις</string>
+    <string name="empty_glucose">Δεν υπάρχουν μετρήσεις γλυκόζης</string>
+    <string name="empty_insulin">Δεν υπάρχουν καταγραφές ινσουλίνης</string>
+    <string name="empty_meals">Δεν υπάρχουν καταγραφές γευμάτων</string>
+    <string name="suggested_label">Πρόταση: %1$.1fU</string>
+
+    <!-- Buddy Screen -->
+    <string name="buddy_name">Glyco</string>
+    <string name="mood_very_happy">Πολύ χαρούμενος! 🎉</string>
+    <string name="mood_happy">Χαρούμενος 😊</string>
+    <string name="mood_neutral">Εντάξει 🤔</string>
+    <string name="mood_sad">Στεναχωρημένος 😔</string>
+    <string name="mood_worried">Ανήσυχος ⚠️</string>
+    <string name="level_label">Level %1$d · %2$s</string>
+    <string name="xp_label">%1$d XP</string>
+    <string name="streak_days_label">🔥 %1$d μέρες</string>
+    <string name="xp_progress">%1$d / %2$d XP</string>
+    <string name="next_level">→ Level %1$d</string>
+    <string name="streak_title">Streak</string>
+    <string name="next_milestone">%1$d μέρες ακόμα για το επόμενο milestone</string>
+    <string name="legendary_streak">Απίστευτο! Πάνω από 30 μέρες! 🏆</string>
+    <string name="badges_title">BADGES</string>
+    <string name="earned_badges">Κερδήθηκαν (%1$d)</string>
+    <string name="locked_badges">Κλειδωμένα (%1$d)</string>
+    <string name="xp_reward">+%1$d XP</string>
+    <string name="buddy_greeting">Γεια σου! 👋</string>
+
+    <!-- Levels -->
+    <string name="level_1">Αρχάριος</string>
+    <string name="level_2">Παρατηρητής</string>
+    <string name="level_3">Σταθερός</string>
+    <string name="level_4">Αξιόπιστος</string>
+    <string name="level_5">Προχωρημένος</string>
+    <string name="level_6">Ειδικός</string>
+    <string name="level_7">Warrior</string>
+    <string name="level_8">Champion</string>
+    <string name="level_9">Legend</string>
+    <string name="level_10">Master</string>
+
+    <!-- Badges -->
+    <string name="badge_1_name">Πρώτο βήμα</string>
+    <string name="badge_1_desc">Πρώτη καταγραφή γλυκόζης</string>
+    <string name="badge_2_name">7 Ημέρες</string>
+    <string name="badge_2_desc">7 συνεχόμενες μέρες καταγραφής</string>
+    <string name="badge_3_name">Iron Will</string>
+    <string name="badge_3_desc">14 συνεχόμενες μέρες</string>
+    <string name="badge_4_name">Champion</string>
+    <string name="badge_4_desc">30 συνεχόμενες μέρες</string>
+    <string name="badge_5_name">Τέλεια Μέρα</string>
+    <string name="badge_5_desc">100% Time in Range</string>
+    <string name="badge_6_name">Star Week</string>
+    <string name="badge_6_desc">TIR > 70% για 7 μέρες</string>
+    <string name="badge_7_name">Foodie</string>
+    <string name="badge_7_desc">Πρώτη καταγραφή γεύματος</string>
+    <string name="badge_8_name">Meal Master</string>
+    <string name="badge_8_desc">50 καταγραφές γευμάτων</string>
+    <string name="badge_9_name">Insulin Pro</string>
+    <string name="badge_9_desc">100 καταγραφές ινσουλίνης</string>
+    <string name="badge_10_name">Night Watch</string>
+    <string name="badge_10_desc">Μέτρηση μετά τα μεσάνυχτα</string>
+    <string name="badge_11_name">Early Bird</string>
+    <string name="badge_11_desc">Μέτρηση πριν τις 7:00 πμ</string>
+    <string name="badge_12_name">Connected</string>
+    <string name="badge_12_desc">Σύνδεση CGM αισθητήρα</string>
+    <string name="badge_13_name">Steady as a Rock</string>
+    <string name="badge_13_desc">6 ώρες εντός στόχου</string>
+
+    <!-- Buddy Messages -->
+    <string name="msg_perfect_30">Απίστευτο! 30 μέρες! Είσαι ο απόλυτος Champion! 👑</string>
+    <string name="msg_perfect_14">Wow! 2 εβδομάδες σερί! Κερδίζεις το badge Iron Will! 🛡️</string>
+    <string name="msg_perfect_7">Εξαιρετικό! 7 μέρες συνεχόμενα! Συνέχισε έτσι! ⚡</string>
+    <string name="msg_perfect">Μπράβο! Τέλεια μέρα! Συνέχισε έτσι! 🏆</string>
+    <string name="msg_happy_streak">Πάμε καλά! %1$d μέρες σερί — μην το σπάσεις! 🔥</string>
+    <string name="msg_happy">Καλά πάμε! Κράτα το streak σου! 💪</string>
+    <string name="msg_neutral">Εντάξει σήμερα… Αύριο θα είναι καλύτερα! 🤔</string>
+    <string name="msg_sad_8">Πεινάω πολύ… %1$d ώρες χωρίς καταγραφή! Τι τρως; 🍽️</string>
+    <string name="msg_sad_4">Γεια σου! Πότε θα με θυμηθείς; Πάμε μέτρηση! 📊</string>
+    <string name="msg_sad">Μην ξεχνάς να καταγράφεις! Είμαι εδώ 😊</string>
+    <string name="msg_worried">Πρόσεξε! Η γλυκόζη σου χρειάζεται προσοχή τώρα! ⚠️</string>
+
+    <!-- SOS Screen -->
+    <string name="sos_title">SOS &amp; Ασφάλεια</string>
+    <string name="sos_sent_success">✅ SOS Εστάλη!</string>
+    <string name="sos_sent_body">Ειδοποιήθηκαν %1$d επαφές%2$s</string>
+    <string name="gps_location_sent"> με GPS τοποθεσία.</string>
+    <string name="sos_problem">⚠️ Πρόβλημα</string>
+    <string name="no_contacts_title">Δεν υπάρχουν επαφές</string>
+    <string name="no_contacts_body">Πρόσθεσε τουλάχιστον μία επαφή έκτακτης ανάγκης.</string>
+    <string name="panic_button_title">Κουμπί Πανικού</string>
+    <string name="panic_button_subtitle">Αποστολή GPS + SMS σε όλες τις επαφές ανάγκης</string>
+    <string name="emergency_contacts_header">ΕΠΑΦΕΣ ΑΝΑΓΚΗΣ</string>
+    <string name="add_contact">Προσθήκη</string>
+    <string name="no_contacts_yet">Δεν υπάρχουν επαφές ακόμα</string>
+    <string name="add_contact_hint">Πρόσθεσε γιατρό, οικογένεια ή φίλο</string>
+    <string name="auto_trigger_header">ΑΥΤΟΜΑΤΗ ΕΝΕΡΓΟΠΟΙΗΣΗ</string>
+    <string name="auto_sos_title">Αυτόματο SOS</string>
+    <string name="auto_sos_subtitle">Αποστολή αυτόματα όταν γλυκόζη &lt; κατώφλι</string>
+    <string name="threshold_label">Κατώφλι (mg/dL)</string>
+    <string name="threshold_recommended">Προτεινόμενο: 55 mg/dL</string>
+    <string name="sos_info_text">Το αυτόματο SOS ενεργοποιείται από τον συγχρονισμό CGM όταν η γλυκόζη είναι επικίνδυνα χαμηλή.</string>
+    <string name="new_contact_title">Νέα επαφή ανάγκης</string>
+    <string name="phone_label">Τηλέφωνο</string>
+    <string name="role_label">Ρόλος (προαιρετικό)</string>
+    <string name="role_placeholder">π.χ. Γιατρός, Σύζυγος</string>
+    <string name="cancel">Άκυρο</string>
+    <string name="delete">Διαγραφή</string>
+
+    <!-- Mood Tracker Screen -->
+    <string name="mood_tracker_top_title">Mood Tracker</string>
+    <string name="new_mood_action">Νέο mood</string>
+    <string name="log_mood_action">Καταγραφή mood</string>
+    <string name="glucose_correlation_hint">Γλυκόζη τώρα: %1$d mg/dL — θα συσχετιστεί με το mood σου</string>
+    <string name="tab_today">Σήμερα</string>
+    <string name="tab_history">Ιστορικό</string>
+    <string name="tab_correlation">Συσχέτιση</string>
+    <string name="empty_mood_today">Δεν έχεις καταγράψει mood σήμερα</string>
+    <string name="how_feel_button">Πώς νιώθεις τώρα;</string>
+    <string name="today_mood_header">ΚΑΤΑΓΡΑΦΕΣ ΣΗΜΕΡΑ</string>
+    <string name="daily_summary_title">Σημερινή εικόνα</string>
+    <string name="mood_summary_stats">Μέσος όρος: %1$.1f/5  •  %2$d καταγραφές</string>
+    <string name="avg_glucose_mood">Μέση γλυκόζη κατά τις καταγραφές: %1$d mg/dL</string>
+    <string name="empty_mood_history">Δεν υπάρχουν καταγραφές ακόμα</string>
+    <string name="no_correlation_data">Δεν υπάρχουν δεδομένα για συσχέτιση</string>
+    <string name="correlation_hint">Καταγράψτε mood ενώ έχετε ενεργό CGM για να δείτε\nπώς η γλυκόζη επηρεάζει την ψυχολογία σας.</string>
+    <string name="glucose_psychology_header">ΓΛΥΚΟΖΗ &amp; ΨΥΧΟΛΟΓΙΑ</string>
+    <string name="correlation_stats_header">Σύγκριση διάθεσης ανά επίπεδο γλυκόζης (%1$d δεδομένα)</string>
+    <string name="low_glucose_bucket">Χαμηλή γλυκόζη (&lt; 70)</string>
+    <string name="target_glucose_bucket">Εντός στόχου (70–180)</string>
+    <string name="high_glucose_bucket">Υψηλή γλυκόζη (&gt; 180)</string>
+    <string name="logs_count_suffix">%1$d καταγρ.</string>
+    <string name="mgdl_avg">mg/dL μ.ο.</string>
+    <string name="mood_avg">mood μ.ο.</string>
+    <string name="how_feel_dialog_title">Πώς νιώθεις;</string>
+    <string name="glucose_save_hint">Γλυκόζη τώρα: %1$d mg/dL — θα αποθηκευτεί με την καταγραφή</string>
+    <string name="mood_label">Διάθεση:</string>
+    <string name="energy_label">Ενέργεια:</string>
+    <string name="notes_label">Σημειώσεις (προαιρετικό)</string>
+    <string name="notes_placeholder">π.χ. Κουρασμένος μετά το φαγητό…</string>
+    <string name="save">Αποθήκευση</string>
+    <string name="glucose_label">Γλυκόζη: %1$d mg/dL</string>
+
+    <!-- Mood Levels -->
+    <string name="mood_very_bad">Πολύ κακή</string>
+    <string name="mood_bad">Κακή</string>
+    <string name="mood_neutral_level">Ουδέτερη</string>
+    <string name="mood_good">Καλή</string>
+    <string name="mood_very_good">Πολύ καλή</string>
+
+    <!-- Energy Levels -->
+    <string name="energy_exhausted">Εξάντληση</string>
+    <string name="energy_tired">Κούραση</string>
+    <string name="energy_normal">Κανονικό</string>
+    <string name="energy_energized">Ενεργητικός</string>
+    <string name="energy_hyper">Υπερδραστήριος</string>
+
+    <!-- Insights -->
+    <string name="insight_low_glucose">Η διάθεσή σου επηρεάζεται αρνητικά κατά τη χαμηλή γλυκόζη. </string>
+    <string name="insight_high_glucose">Η υψηλή γλυκόζη σχετίζεται με χειρότερη διάθεση. </string>
+    <string name="insight_normal_glucose">Όταν η γλυκόζη είναι εντός στόχου, νιώθεις καλύτερα!</string>
+
+    <!-- Reminders Screen -->
+    <string name="reminders_top_title">Υπενθυμίσεις</string>
+    <string name="new_reminder_action">Νέα υπενθύμιση</string>
+    <string name="empty_reminders">Δεν υπάρχουν υπενθυμίσεις</string>
+    <string name="add_reminder_prompt">Πάτα + για να προσθέσεις</string>
+    <string name="type_glucose">Μέτρηση γλυκόζης</string>
+    <string name="type_medication">Φάρμακο/Ινσουλίνη</string>
+    <string name="type_exercise">Άσκηση</string>
+    <string name="type_meal">Γεύμα</string>
+    <string name="type_custom">Προσαρμοσμένο</string>
+    <string name="repeat_once">Μία φορά</string>
+    <string name="repeat_daily">Κάθε μέρα</string>
+    <string name="repeat_8h">Κάθε 8 ώρες</string>
+    <string name="repeat_12h">Κάθε 12 ώρες</string>
+    <string name="new_reminder_title">Νέα Υπενθύμιση</string>
+    <string name="reminder_type_label">Τύπος:</string>
+    <string name="title_label">Τίτλος</string>
+    <string name="hour_label">ΩΩ</string>
+    <string name="minute_label">ΛΛ</string>
+    <string name="repeat_label">Επανάληψη:</string>
+    <string name="add_button">Προσθήκη</string>
+    <string name="notification_channel_reminders">Υπενθυμίσεις</string>
+    <string name="default_notification_title">Υπενθύμιση</string>
+
+    <!-- Onboarding Screen -->
+    <string name="onboarding_welcome_title">GlycoMate</string>
+    <string name="onboarding_welcome_subtitle">Η ψηφιακή διαχείριση του διαβήτη σου</string>
+    <string name="onboarding_start_button">Ξεκινάμε  →</string>
+    <string name="patient_profile_title">Προφίλ ασθενούς</string>
+    <string name="profile_subtitle">Συμπλήρωσε τα παρακάτω για τον υπολογισμό δόσης ινσουλίνης.</string>
+    <string name="diabetes_type_label">Τύπος διαβήτη</string>
+    <string name="glucose_targets_title">Στόχοι γλυκόζης (mg/dL)</string>
+    <string name="insulin_params_title">Παράμετροι ινσουλίνης</string>
+    <string name="icr_hint">π.χ. 10 = 1 μονάδα για 10γρ carbs</string>
+    <string name="isf_hint">π.χ. 40 = μείωση 40 mg/dL ανά μονάδα</string>
+    <string name="next_step_button">Επόμενο  →</string>
+    <string name="connect_cgm_title">Σύνδεση CGM</string>
+    <string name="connect_cgm_subtitle">Σύνδεσε τον αισθητήρα σου για αυτόματη λήψη μετρήσεων.</string>
+    <string name="tab_manual">Χειροκίνητα</string>
+    <string name="cgm_credentials_hint">Χρησιμοποίησε τα ίδια στοιχεία με την εφαρμογή LibreLink / LibreView.</string>
+    <string name="server_region_label">Server περιοχή (Ελλάδα = EU)</string>
+    <string name="connect_start_button">Σύνδεση &amp; Εκκίνηση</string>
+    <string name="dexcom_credentials_hint">Χρησιμοποίησε τα στοιχεία σύνδεσης της εφαρμογής Dexcom G6/G7.</string>
+    <string name="dexcom_region_label">Περιοχή (Ελλάδα = Ευρώπη OUS)</string>
+    <string name="connect_dexcom_start">Σύνδεση Dexcom &amp; Εκκίνηση</string>
+    <string name="manual_mode_onboarding_text">Θα καταγράφεις τις μετρήσεις χειροκίνητα. Μπορείς να συνδέσεις CGM αργότερα από τις Ρυθμίσεις.</string>
+    <string name="continue_manual_button">Συνέχεια χωρίς CGM</string>
+
+    <!-- Themes -->
+    <string name="theme_system">Σύστημα</string>
+    <string name="theme_light">Φωτεινό</string>
+    <string name="theme_dark">Σκούρο</string>
+</resources>
