@@ -2,6 +2,7 @@ package com.glycomate.app.ui.screens
 
 import androidx.compose.animation.*
 import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -21,6 +22,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -50,7 +53,11 @@ fun DashboardScreen(
     var showAddGlucose  by remember { mutableStateOf(false) }
     var showAddInsulin  by remember { mutableStateOf(false) }
     var showAddMeal     by remember { mutableStateOf(false) }
-    
+
+    var editingGlucose  by remember { mutableStateOf<GlucoseReading?>(null) }
+    var editingInsulin  by remember { mutableStateOf<InsulinEntry?>(null) }
+    var editingMeal     by remember { mutableStateOf<MealEntry?>(null) }
+
     var fabExpanded     by remember { mutableStateOf(false) }
 
     Scaffold(
@@ -126,13 +133,22 @@ fun DashboardScreen(
 
                 item { GlucoseHeroCard(reading = state.latestReading, profile = state.profile) }
                 item { MiniXpBar(xp = gamState.xp, level = gamState.level, progressFraction = gamState.progressFraction, streakDays = gamState.streakDays) }
+                
+                // Stats Row 1
                 item {
                     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                        StatCard(stringResource(R.string.time_in_range), "${state.todayTir.toInt()}%", if (state.todayTir >= 70f) GlycoGreen else GlycoAmber, modifier = Modifier.weight(1f))
+                        TirPieCard(readings = state.todayReadings, profile = state.profile, modifier = Modifier.weight(1f))
+                        StatCard(
+                            label = "Μετρήσεις",
+                            value = "${state.todayReadings.size}",
+                            color = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.weight(1f),
+                            subtitle = "σήμερα"
+                        )
                         InsulinStatCard(iob = state.iob, basalToday = state.basalToday, modifier = Modifier.weight(1f))
-                        StatCard(stringResource(R.string.measurements), "${state.todayReadings.size}", MaterialTheme.colorScheme.tertiary, modifier = Modifier.weight(1f))
                     }
                 }
+
                 item { Text(stringResource(R.string.today_logs), style = MaterialTheme.typography.labelSmall.copy(letterSpacing = 1.sp), color = MaterialTheme.colorScheme.onSurfaceVariant) }
 
                 val timeline = buildTimeline(allReadings, allInsulin, allMeals)
@@ -144,7 +160,15 @@ fun DashboardScreen(
                     }
                 } else {
                     items(timeline) { entry ->
-                        TimelineEntryCard(entry = entry, onDeleteGlucose = { viewModel.deleteGlucose(it) }, onDeleteInsulin = { viewModel.deleteInsulin(it) }, onDeleteMeal = { viewModel.deleteMeal(it) })
+                        TimelineEntryCard(
+                            entry = entry,
+                            onEditGlucose = { editingGlucose = it },
+                            onEditInsulin = { editingInsulin = it },
+                            onEditMeal    = { editingMeal = it },
+                            onDeleteGlucose = { viewModel.deleteGlucose(it) },
+                            onDeleteInsulin = { viewModel.deleteInsulin(it) },
+                            onDeleteMeal = { viewModel.deleteMeal(it) }
+                        )
                     }
                 }
             }
@@ -156,9 +180,109 @@ fun DashboardScreen(
         }
     }
 
-    if (showAddGlucose) AddGlucoseDialog(onConfirm = { v, ts -> viewModel.logGlucose(v, ts); showAddGlucose = false }, onDismiss = { showAddGlucose = false })
-    if (showAddInsulin) AddInsulinDialog(profile = state.profile, onConfirm = { u, t, b, ts -> viewModel.logInsulin(u, t, b, ts); showAddInsulin = false }, onDismiss = { showAddInsulin = false })
-    if (showAddMeal) AddMealDialog(calculateBolus = viewModel::calculateBolus, onConfirm = { d, c, ts -> viewModel.logMeal(d, c, ts); showAddMeal = false }, onDismiss = { showAddMeal = false })
+    if (showAddGlucose) {
+        AddGlucoseDialog(
+            onConfirm = { v, ts -> viewModel.logGlucose(v, ts); showAddGlucose = false },
+            onDismiss = { showAddGlucose = false }
+        )
+    }
+
+    editingGlucose?.let { reading ->
+        AddGlucoseDialog(
+            initialValue = reading.valueMgDl,
+            initialTimestamp = reading.timestampMs,
+            isEditing = true,
+            onConfirm = { v, ts ->
+                viewModel.updateGlucose(reading.copy(valueMgDl = v, timestampMs = ts))
+                editingGlucose = null
+            },
+            onDismiss = { editingGlucose = null }
+        )
+    }
+
+    if (showAddInsulin) {
+        AddInsulinDialog(
+            profile = state.profile,
+            onConfirm = { u, t, b, ts -> viewModel.logInsulin(u, t, b, ts); showAddInsulin = false },
+            onDismiss = { showAddInsulin = false }
+        )
+    }
+
+    editingInsulin?.let { entry ->
+        AddInsulinDialog(
+            profile = state.profile,
+            initialUnits = entry.units,
+            initialType = entry.type,
+            initialBrand = entry.brand,
+            initialTimestamp = entry.timestampMs,
+            isEditing = true,
+            onConfirm = { u, t, b, ts ->
+                viewModel.updateInsulin(entry.copy(units = u, type = t, brand = b, timestampMs = ts))
+                editingInsulin = null
+            },
+            onDismiss = { editingInsulin = null }
+        )
+    }
+
+    if (showAddMeal) {
+        AddMealDialog(
+            calculateBolus = viewModel::calculateBolus,
+            onConfirm = { d, c, ts -> viewModel.logMeal(d, c, ts); showAddMeal = false },
+            onDismiss = { showAddMeal = false }
+        )
+    }
+
+    editingMeal?.let { entry ->
+        AddMealDialog(
+            calculateBolus = viewModel::calculateBolus,
+            initialDescription = entry.description,
+            initialCarbs = entry.carbsGrams,
+            initialTimestamp = entry.timestampMs,
+            isEditing = true,
+            onConfirm = { d, c, ts ->
+                viewModel.updateMeal(entry.copy(description = d, carbsGrams = c, timestampMs = ts))
+                editingMeal = null
+            },
+            onDismiss = { editingMeal = null }
+        )
+    }
+}
+
+@Composable
+fun TirPieCard(readings: List<GlucoseReading>, profile: UserProfile, modifier: Modifier = Modifier) {
+    val total = readings.size.toFloat()
+    val tirCount = readings.count { it.valueMgDl in profile.targetLow..profile.targetHigh }
+    val highCount = readings.count { it.valueMgDl > profile.targetHigh }
+    val lowCount = readings.count { it.valueMgDl < profile.targetLow }
+
+    val tirPct = if (total > 0) (tirCount / total) * 100f else 0f
+
+    Card(modifier = modifier, shape = RoundedCornerShape(12.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)) {
+        Column(modifier = Modifier.padding(12.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+            Text(stringResource(R.string.time_in_range), style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 1)
+            Spacer(Modifier.height(8.dp))
+            Box(contentAlignment = Alignment.Center, modifier = Modifier.size(50.dp)) {
+                Canvas(modifier = Modifier.fillMaxSize()) {
+                    val stroke = 6.dp.toPx()
+                    drawCircle(color = Color.LightGray.copy(alpha = 0.2f), style = Stroke(stroke))
+                    var startAngle = -90f
+                    if (total > 0) {
+                        val lowSweep = (lowCount / total) * 360f
+                        drawArc(GlycoRed, startAngle, lowSweep, false, style = Stroke(stroke, cap = StrokeCap.Round))
+                        startAngle += lowSweep
+                        val tirSweep = (tirCount / total) * 360f
+                        drawArc(GlycoGreen, startAngle, tirSweep, false, style = Stroke(stroke, cap = StrokeCap.Round))
+                        startAngle += tirSweep
+                        val highSweep = (highCount / total) * 360f
+                        drawArc(GlycoAmber, startAngle, highSweep, false, style = Stroke(stroke, cap = StrokeCap.Round))
+                    }
+                }
+                Text("${tirPct.toInt()}%", style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold))
+            }
+        }
+    }
 }
 
 enum class FabAction { GLUCOSE, INSULIN, MEAL, BARCODE, AI_SCAN }
@@ -324,6 +448,9 @@ private fun buildTimeline(
 @Composable
 private fun TimelineEntryCard(
     entry: TimelineEntry,
+    onEditGlucose: (GlucoseReading) -> Unit,
+    onEditInsulin: (InsulinEntry)   -> Unit,
+    onEditMeal:    (MealEntry)      -> Unit,
     onDeleteGlucose: (GlucoseReading) -> Unit,
     onDeleteInsulin: (InsulinEntry)   -> Unit,
     onDeleteMeal:    (MealEntry)      -> Unit
@@ -333,7 +460,13 @@ private fun TimelineEntryCard(
 
     Card(modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(10.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-        onClick = { showDelete = !showDelete }) {
+        onClick = {
+            when (entry) {
+                is TimelineEntry.Glucose -> onEditGlucose(entry.r)
+                is TimelineEntry.Insulin -> onEditInsulin(entry.e)
+                is TimelineEntry.Meal    -> onEditMeal(entry.e)
+            }
+        }) {
         Row(modifier = Modifier.padding(14.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(12.dp)) {
@@ -355,9 +488,14 @@ private fun TimelineEntryCard(
                     Text(sdf.format(Date(entry.r.timestampMs)),
                         style = MaterialTheme.typography.labelSmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    IconButton(onClick = { showDelete = !showDelete }, modifier = Modifier.size(32.dp)) {
+                        Icon(if (showDelete) Icons.Filled.Close else Icons.Filled.Delete, null,
+                            tint = if (showDelete) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.error,
+                            modifier = Modifier.size(18.dp))
+                    }
                     AnimatedVisibility(showDelete) {
                         IconButton(onClick = { onDeleteGlucose(entry.r) }, modifier = Modifier.size(32.dp)) {
-                            Icon(Icons.Filled.Delete, null, tint = MaterialTheme.colorScheme.error,
+                            Icon(Icons.Filled.Check, null, tint = MaterialTheme.colorScheme.error,
                                 modifier = Modifier.size(18.dp))
                         }
                     }
@@ -374,9 +512,14 @@ private fun TimelineEntryCard(
                     Text(sdf.format(Date(entry.e.timestampMs)),
                         style = MaterialTheme.typography.labelSmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    IconButton(onClick = { showDelete = !showDelete }, modifier = Modifier.size(32.dp)) {
+                        Icon(if (showDelete) Icons.Filled.Close else Icons.Filled.Delete, null,
+                            tint = if (showDelete) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.error,
+                            modifier = Modifier.size(18.dp))
+                    }
                     AnimatedVisibility(showDelete) {
                         IconButton(onClick = { onDeleteInsulin(entry.e) }, modifier = Modifier.size(32.dp)) {
-                            Icon(Icons.Filled.Delete, null, tint = MaterialTheme.colorScheme.error,
+                            Icon(Icons.Filled.Check, null, tint = MaterialTheme.colorScheme.error,
                                 modifier = Modifier.size(18.dp))
                         }
                     }
@@ -397,9 +540,14 @@ private fun TimelineEntryCard(
                     Text(sdf.format(Date(entry.e.timestampMs)),
                         style = MaterialTheme.typography.labelSmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    IconButton(onClick = { showDelete = !showDelete }, modifier = Modifier.size(32.dp)) {
+                        Icon(if (showDelete) Icons.Filled.Close else Icons.Filled.Delete, null,
+                            tint = if (showDelete) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.error,
+                            modifier = Modifier.size(18.dp))
+                    }
                     AnimatedVisibility(showDelete) {
                         IconButton(onClick = { onDeleteMeal(entry.e) }, modifier = Modifier.size(32.dp)) {
-                            Icon(Icons.Filled.Delete, null, tint = MaterialTheme.colorScheme.error,
+                            Icon(Icons.Filled.Check, null, tint = MaterialTheme.colorScheme.error,
                                 modifier = Modifier.size(18.dp))
                         }
                     }
@@ -481,14 +629,20 @@ fun DateTimePickerRow(timestampMs: Long, onTimestampChanged: (Long) -> Unit) {
                     showDatePicker = false
                 }) { Text("OK") }
             },
-            dismissButton = { TextButton(onClick = { showDatePicker = false }) { Text("Άκυρο") } }
+            dismissButton = { TextButton(onClick = { showDatePicker = false }) { Text("Άυρο") } }
         ) { DatePicker(state = state) }
     }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AddGlucoseDialog(onConfirm: (Float, Long) -> Unit, onDismiss: () -> Unit) {
+fun AddGlucoseDialog(
+    initialValue: Float = 0f,
+    initialTimestamp: Long = System.currentTimeMillis(),
+    isEditing: Boolean = false,
+    onConfirm: (Float, Long) -> Unit,
+    onDismiss: () -> Unit
+) {
     val fieldColors = OutlinedTextFieldDefaults.colors(
         focusedTextColor     = MaterialTheme.colorScheme.onSurface,
         unfocusedTextColor   = MaterialTheme.colorScheme.onSurface,
@@ -498,11 +652,11 @@ fun AddGlucoseDialog(onConfirm: (Float, Long) -> Unit, onDismiss: () -> Unit) {
         unfocusedBorderColor = MaterialTheme.colorScheme.outline,
         cursorColor          = MaterialTheme.colorScheme.primary
     )
-    var value       by remember { mutableStateOf("") }
-    var timestampMs by remember { mutableStateOf(System.currentTimeMillis()) }
+    var value       by remember { mutableStateOf(if (isEditing) initialValue.toString() else "") }
+    var timestampMs by remember { mutableStateOf(initialTimestamp) }
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Καταγραφή γλυκόζης") },
+        title = { Text(if (isEditing) "Επεξεργασία γλυκόζης" else "Καταγραφή γλυκόζης") },
         text  = {
             Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 OutlinedTextField(value = value, onValueChange = { value = it },
@@ -515,7 +669,7 @@ fun AddGlucoseDialog(onConfirm: (Float, Long) -> Unit, onDismiss: () -> Unit) {
         },
         confirmButton = {
             Button(onClick = { value.toFloatOrNull()?.let { onConfirm(it, timestampMs) } },
-                enabled = value.toFloatOrNull() != null) { Text("Αποθήκευση") }
+                enabled = value.toFloatOrNull() != null) { Text(if (isEditing) "Ενημέρωση" else "Αποθήκευση") }
         },
         dismissButton = { TextButton(onClick = onDismiss) { Text("Άκυρο") } }
     )
@@ -525,6 +679,11 @@ fun AddGlucoseDialog(onConfirm: (Float, Long) -> Unit, onDismiss: () -> Unit) {
 @Composable
 fun AddInsulinDialog(
     profile: UserProfile,
+    initialUnits: Float = 0f,
+    initialType: InsulinType = InsulinType.RAPID,
+    initialBrand: String = "",
+    initialTimestamp: Long = System.currentTimeMillis(),
+    isEditing: Boolean = false,
     onConfirm: (Float, InsulinType, String, Long) -> Unit,
     onDismiss: () -> Unit
 ) {
@@ -537,16 +696,16 @@ fun AddInsulinDialog(
         unfocusedBorderColor = MaterialTheme.colorScheme.outline,
         cursorColor          = MaterialTheme.colorScheme.primary
     )
-    var units       by remember { mutableStateOf("") }
-    var type        by remember { mutableStateOf(InsulinType.RAPID) }
+    var units       by remember { mutableStateOf(if (isEditing) initialUnits.toString() else "") }
+    var type        by remember { mutableStateOf(initialType) }
     var brand       by remember(type) {
-        mutableStateOf(if (type == InsulinType.RAPID) profile.rapidInsulinBrand else profile.longInsulinBrand)
+        mutableStateOf(if (isEditing && type == initialType) initialBrand else if (type == InsulinType.RAPID) profile.rapidInsulinBrand else profile.longInsulinBrand)
     }
-    var timestampMs by remember { mutableStateOf(System.currentTimeMillis()) }
+    var timestampMs by remember { mutableStateOf(initialTimestamp) }
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Καταγραφή ινσουλίνης") },
+        title = { Text(if (isEditing) "Επεξεργασία ινσουλίνης" else "Καταγραφή ινσουλίνης") },
         text  = {
             Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 OutlinedTextField(value = units, onValueChange = { units = it },
@@ -578,15 +737,23 @@ fun AddInsulinDialog(
         },
         confirmButton = {
             Button(onClick = { units.toFloatOrNull()?.let { onConfirm(it, type, brand, timestampMs) } },
-                enabled = units.toFloatOrNull() != null) { Text("Αποθήκευση") }
+                enabled = units.toFloatOrNull() != null) { Text(if (isEditing) "Ενημέρωση" else "Αποθήκευση") }
         },
-        dismissButton = { TextButton(onClick = onDismiss) { Text("Άκυρο") } }
+        dismissButton = { TextButton(onClick = onDismiss) { Text("Άυρο") } }
     )
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AddMealDialog(calculateBolus: (Float) -> Float, onConfirm: (String, Float, Long) -> Unit, onDismiss: () -> Unit) {
+fun AddMealDialog(
+    calculateBolus: (Float) -> Float,
+    initialDescription: String = "",
+    initialCarbs: Float = 0f,
+    initialTimestamp: Long = System.currentTimeMillis(),
+    isEditing: Boolean = false,
+    onConfirm: (String, Float, Long) -> Unit,
+    onDismiss: () -> Unit
+) {
     val fieldColors = OutlinedTextFieldDefaults.colors(
         focusedTextColor     = MaterialTheme.colorScheme.onSurface,
         unfocusedTextColor   = MaterialTheme.colorScheme.onSurface,
@@ -596,14 +763,14 @@ fun AddMealDialog(calculateBolus: (Float) -> Float, onConfirm: (String, Float, L
         unfocusedBorderColor = MaterialTheme.colorScheme.outline,
         cursorColor          = MaterialTheme.colorScheme.primary
     )
-    var desc        by remember { mutableStateOf("") }
-    var carbs       by remember { mutableStateOf("") }
-    var timestampMs by remember { mutableStateOf(System.currentTimeMillis()) }
+    var desc        by remember { mutableStateOf(initialDescription) }
+    var carbs       by remember { mutableStateOf(if (isEditing) initialCarbs.toString() else "") }
+    var timestampMs by remember { mutableStateOf(initialTimestamp) }
     val suggested   = carbs.toFloatOrNull()?.let { calculateBolus(it) }
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Καταγραφή γεύματος") },
+        title = { Text(if (isEditing) "Επεξεργασία γεύματος" else "Καταγραφή γεύματος") },
         text  = {
             Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 OutlinedTextField(value = desc, onValueChange = { desc = it },
@@ -615,7 +782,7 @@ fun AddMealDialog(calculateBolus: (Float) -> Float, onConfirm: (String, Float, L
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                     modifier = Modifier.fillMaxWidth(),
                 colors = fieldColors)
-                if (suggested != null && suggested > 0f) {
+                if (suggested != null && suggested > 0f && !isEditing) {
                     Text("Προτεινόμενη δόση: ${String.format("%.1f", suggested)}U",
                         style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.W600),
                         color = MaterialTheme.colorScheme.primary)
@@ -628,7 +795,7 @@ fun AddMealDialog(calculateBolus: (Float) -> Float, onConfirm: (String, Float, L
                 onClick = { if (desc.isNotBlank() && carbs.toFloatOrNull() != null)
                     onConfirm(desc, carbs.toFloat(), timestampMs) },
                 enabled = desc.isNotBlank() && carbs.toFloatOrNull() != null
-            ) { Text("Αποθήκευση") }
+            ) { Text(if (isEditing) "Ενημέρωση" else "Αποθήκευση") }
         },
         dismissButton = { TextButton(onClick = onDismiss) { Text("Άκυρο") } }
     )

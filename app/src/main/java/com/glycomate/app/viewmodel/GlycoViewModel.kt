@@ -42,6 +42,8 @@ class GlycoViewModel(app: Application) : AndroidViewModel(app) {
         viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
     val allMeals    = repo.allMeals.stateIn(
         viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+    val allMoods    = repo.allMoods.stateIn(
+        viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
     val userProfile = repo.prefs.userProfile.stateIn(
         viewModelScope, SharingStarted.WhileSubscribed(5000), UserProfile())
     val onboardingDone = repo.prefs.onboardingDone.stateIn(
@@ -92,12 +94,6 @@ class GlycoViewModel(app: Application) : AndroidViewModel(app) {
         }
     }
 
-    /**
-     * Estimates trend from rate-of-change vs the previous reading.
-     * Only used for manual entries — CGM readings already carry a trend.
-     * Thresholds in mg/dL/min (standard Dexcom/Libre convention):
-     *   > +3 ↑↑ | +2..3 ↑ | +1..2 ↗ | ±1 → | -1..-2 ↘ | -2..-3 ↓ | < -3 ↓↓
-     */
     private fun inferTrend(newValue: Float, prev: GlucoseReading?): GlucoseTrend {
         if (prev == null) return GlucoseTrend.STABLE
         val timeDiffMin = (System.currentTimeMillis() - prev.timestampMs) / 60_000f
@@ -132,33 +128,13 @@ class GlycoViewModel(app: Application) : AndroidViewModel(app) {
         }
     }
 
-    fun deleteGlucose(r: GlucoseReading) =
-        viewModelScope.launch { repo.deleteGlucoseReading(r) }
+    fun updateGlucose(r: GlucoseReading) = viewModelScope.launch { repo.updateGlucoseReading(r) }
+    fun deleteGlucose(r: GlucoseReading) = viewModelScope.launch { repo.deleteGlucoseReading(r) }
 
-    val allMoods = repo.allMoods.stateIn(
-        viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
-
-    fun logMood(mood: MoodLevel, energy: EnergyLevel, notes: String = "") {
+    fun logInsulin(units: Float, type: InsulinType, brand: String, timestampMs: Long = System.currentTimeMillis()) {
         viewModelScope.launch {
             try {
-                val currentGlucose = dashboard.value.latestReading?.valueMgDl
-                repo.addMoodEntry(mood, energy, notes, currentGlucose)
-                _events.emit(AppEvent.ShowSnackbar(
-                    "Mood καταγράφηκε ${mood.emoji}  +${XpAward.GLUCOSE_LOG / 2} XP"))
-            } catch (e: Exception) {
-                _events.emit(AppEvent.ShowSnackbar("Σφάλμα: ${e.localizedMessage}"))
-            }
-        }
-    }
-
-    fun deleteMood(e: MoodEntry) = viewModelScope.launch { repo.deleteMoodEntry(e) }
-
-    suspend fun getMoodCorrelation(days: Int = 30) = repo.moodGlucoseCorrelation(days)
-
-    fun logInsulin(units: Float, type: InsulinType, note: String = "", timestampMs: Long = System.currentTimeMillis()) {
-        viewModelScope.launch {
-            try {
-                repo.addInsulin(units, type, note, timestampMs)
+                repo.addInsulin(units, type, brand, timestampMs)
                 val total     = allInsulin.value.size + 1
                 val gamEvents = gamif.onInsulinLogged(total)
                 emitGamEvents(gamEvents)
@@ -168,8 +144,8 @@ class GlycoViewModel(app: Application) : AndroidViewModel(app) {
         }
     }
 
-    fun deleteInsulin(e: InsulinEntry) =
-        viewModelScope.launch { repo.deleteInsulin(e) }
+    fun updateInsulin(e: InsulinEntry) = viewModelScope.launch { repo.updateInsulin(e) }
+    fun deleteInsulin(e: InsulinEntry) = viewModelScope.launch { repo.deleteInsulin(e) }
 
     fun logMeal(description: String, carbsGrams: Float, timestampMs: Long = System.currentTimeMillis()) {
         viewModelScope.launch {
@@ -187,8 +163,22 @@ class GlycoViewModel(app: Application) : AndroidViewModel(app) {
         }
     }
 
-    fun deleteMeal(e: MealEntry) =
-        viewModelScope.launch { repo.deleteMeal(e) }
+    fun updateMeal(e: MealEntry) = viewModelScope.launch { repo.updateMeal(e) }
+    fun deleteMeal(e: MealEntry) = viewModelScope.launch { repo.deleteMeal(e) }
+
+    fun logMood(mood: MoodLevel, energy: EnergyLevel, notes: String) {
+        viewModelScope.launch {
+            try {
+                val currentGlucose = dashboard.value.latestReading?.valueMgDl
+                repo.addMoodEntry(mood, energy, notes, currentGlucose)
+            } catch (e: Exception) {
+                _events.emit(AppEvent.ShowSnackbar("Σφάλμα: ${e.localizedMessage}"))
+            }
+        }
+    }
+
+    fun updateMood(e: MoodEntry) = viewModelScope.launch { repo.updateMoodEntry(e) }
+    fun deleteMood(e: MoodEntry) = viewModelScope.launch { repo.deleteMoodEntry(e) }
 
     fun syncNow() {
         _dashboard.update { it.copy(isSyncing = true, lastSyncError = null) }
@@ -204,7 +194,6 @@ class GlycoViewModel(app: Application) : AndroidViewModel(app) {
 
     fun completeOnboarding() = viewModelScope.launch {
         repo.prefs.setOnboardingDone()
-        // Always schedule polling — it will stop itself if source is NONE
         CgmSyncWorker.schedule(getApplication())
         if (cgmSource.value != "NONE") {
             val gamEvents = gamif.onCgmConnected()

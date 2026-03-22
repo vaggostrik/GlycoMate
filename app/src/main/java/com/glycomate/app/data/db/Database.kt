@@ -18,6 +18,9 @@ interface GlucoseDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(r: GlucoseReading): Long
 
+    @Update
+    suspend fun update(r: GlucoseReading)
+
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insertAll(readings: List<GlucoseReading>)
 
@@ -41,6 +44,9 @@ interface InsulinDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(e: InsulinEntry): Long
 
+    @Update
+    suspend fun update(e: InsulinEntry)
+
     @Delete
     suspend fun delete(e: InsulinEntry)
 }
@@ -52,6 +58,9 @@ interface MealDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(e: MealEntry): Long
+
+    @Update
+    suspend fun update(e: MealEntry)
 
     @Delete
     suspend fun delete(e: MealEntry)
@@ -67,6 +76,9 @@ interface MoodDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(e: MoodEntry): Long
+
+    @Update
+    suspend fun update(e: MoodEntry)
 
     @Delete
     suspend fun delete(e: MoodEntry)

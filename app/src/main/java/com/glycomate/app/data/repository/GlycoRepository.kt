@@ -56,6 +56,8 @@ class GlycoRepository(private val context: Context) {
         return r.copy(id = id)
     }
 
+    suspend fun updateGlucoseReading(r: GlucoseReading) = db.glucoseDao().update(r)
+
     suspend fun deleteGlucoseReading(r: GlucoseReading) = db.glucoseDao().delete(r)
 
     suspend fun todayReadings(): List<GlucoseReading> {
@@ -76,6 +78,8 @@ class GlycoRepository(private val context: Context) {
         return e.copy(id = id)
     }
 
+    suspend fun updateInsulin(e: InsulinEntry) = db.insulinDao().update(e)
+
     suspend fun deleteInsulin(e: InsulinEntry) = db.insulinDao().delete(e)
 
     suspend fun todayInsulinTotal(): Float {
@@ -91,6 +95,8 @@ class GlycoRepository(private val context: Context) {
         val id = db.mealDao().insert(e)
         return e.copy(id = id)
     }
+
+    suspend fun updateMeal(e: MealEntry) = db.mealDao().update(e)
 
     suspend fun deleteMeal(e: MealEntry) = db.mealDao().delete(e)
 
@@ -275,6 +281,8 @@ class GlycoRepository(private val context: Context) {
         val id = db.moodDao().insert(e)
         return e.copy(id = id)
     }
+
+    suspend fun updateMoodEntry(e: MoodEntry) = db.moodDao().update(e)
 
     suspend fun deleteMoodEntry(e: MoodEntry) = db.moodDao().delete(e)
 
