@@ -11,7 +11,7 @@
 
 ## What is GlycoMate?
 
-GlycoMate is a feature-rich Android application designed to help people with **Type 1 diabetes** manage their condition day-to-day. It connects to Continuous Glucose Monitors (CGMs), logs meals and insulin, calculates bolus doses, and motivates users through gamification — all with a fully **Greek-language UI (Ελληνικά)**.
+GlycoMate is a feature-rich Android application designed to help people with **Type 1 diabetes** manage their condition day-to-day. It connects to Continuous Glucose Monitors (CGMs), logs meals and insulin, calculates bolus doses, and motivates users through gamification — all with a fully **Greek-language UI (Ελληνικά)**- Updated now supports English as well!
 
 ---
 
