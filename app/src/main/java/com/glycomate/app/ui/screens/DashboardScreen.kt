@@ -134,18 +134,31 @@ fun DashboardScreen(
                 item { GlucoseHeroCard(reading = state.latestReading, profile = state.profile) }
                 item { MiniXpBar(xp = gamState.xp, level = gamState.level, progressFraction = gamState.progressFraction, streakDays = gamState.streakDays) }
                 
-                // Stats Row 1
+                // Stats Grid
                 item {
-                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                        TirPieCard(readings = state.todayReadings, profile = state.profile, modifier = Modifier.weight(1f))
-                        StatCard(
-                            label = "Μετρήσεις",
-                            value = "${state.todayReadings.size}",
-                            color = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier.weight(1f),
-                            subtitle = "σήμερα"
-                        )
-                        InsulinStatCard(iob = state.iob, basalToday = state.basalToday, modifier = Modifier.weight(1f))
+                    Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                            TirPieCard(readings = state.todayReadings, profile = state.profile, modifier = Modifier.weight(1f))
+                            val avg = if (state.todayReadings.isNotEmpty()) state.todayReadings.map { it.valueMgDl }.average().toFloat() else 0f
+                            val estA1c = if (avg > 0) (avg + 46.7f) / 28.7f else 0f
+                            StatCard(
+                                label = stringResource(R.string.estimated_hba1c),
+                                value = if (estA1c > 0) String.format("%.1f%%", estA1c) else "—",
+                                color = MaterialTheme.colorScheme.secondary,
+                                modifier = Modifier.weight(1f),
+                                subtitle = stringResource(R.string.tab_today).lowercase()
+                            )
+                        }
+                        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                            StatCard(
+                                label = stringResource(R.string.measurements),
+                                value = "${state.todayReadings.size}",
+                                color = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.weight(1f),
+                                subtitle = stringResource(R.string.tab_today).lowercase()
+                            )
+                            InsulinStatCard(iob = state.iob, basalToday = state.basalToday, modifier = Modifier.weight(1f))
+                        }
                     }
                 }
 
@@ -503,7 +516,7 @@ private fun TimelineEntryCard(
                 is TimelineEntry.Insulin -> {
                     Icon(Icons.Filled.Colorize, null, tint = GlycoAmber, modifier = Modifier.size(20.dp))
                     Column(modifier = Modifier.weight(1f)) {
-                        Text("${entry.e.units}U  ${entry.e.type.label} (${entry.e.brand})",
+                        Text("${entry.e.units}U  ${stringResource(entry.e.type.labelRes)} (${entry.e.brand})",
                             style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.W600))
                         if (entry.e.note.isNotBlank())
                             Text(entry.e.note, style = MaterialTheme.typography.labelSmall,
@@ -532,7 +545,7 @@ private fun TimelineEntryCard(
                             style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.W600))
                         Text("${entry.e.carbsGrams.toInt()}g carbs" +
                             if (entry.e.suggestedInsulinUnits > 0f)
-                                "  •  Πρόταση: ${String.format("%.1f", entry.e.suggestedInsulinUnits)}U"
+                                "  •  " + stringResource(R.string.suggested_label, entry.e.suggestedInsulinUnits)
                             else "",
                             style = MaterialTheme.typography.labelSmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant)
@@ -568,7 +581,7 @@ fun DateTimePickerRow(timestampMs: Long, onTimestampChanged: (Long) -> Unit) {
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        Text("Ώρα:", style = MaterialTheme.typography.labelMedium,
+        Text(stringResource(R.string.hour_label) + ":", style = MaterialTheme.typography.labelMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant)
         FilterChip(
             selected = false,
@@ -592,7 +605,7 @@ fun DateTimePickerRow(timestampMs: Long, onTimestampChanged: (Long) -> Unit) {
         )
         AlertDialog(
             onDismissRequest = { showTimePicker = false },
-            title            = { Text("Επιλογή ώρας") },
+            title            = { Text(stringResource(R.string.hour_label)) },
             text             = { TimeInput(state = state) },
             confirmButton    = {
                 TextButton(onClick = {
@@ -606,7 +619,7 @@ fun DateTimePickerRow(timestampMs: Long, onTimestampChanged: (Long) -> Unit) {
                     showTimePicker = false
                 }) { Text("OK") }
             },
-            dismissButton = { TextButton(onClick = { showTimePicker = false }) { Text("Άκυρο") } }
+            dismissButton = { TextButton(onClick = { showTimePicker = false }) { Text(stringResource(R.string.cancel)) } }
         )
     }
 
@@ -629,7 +642,7 @@ fun DateTimePickerRow(timestampMs: Long, onTimestampChanged: (Long) -> Unit) {
                     showDatePicker = false
                 }) { Text("OK") }
             },
-            dismissButton = { TextButton(onClick = { showDatePicker = false }) { Text("Άυρο") } }
+            dismissButton = { TextButton(onClick = { showDatePicker = false }) { Text(stringResource(R.string.cancel)) } }
         ) { DatePicker(state = state) }
     }
 }
@@ -656,11 +669,11 @@ fun AddGlucoseDialog(
     var timestampMs by remember { mutableStateOf(initialTimestamp) }
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text(if (isEditing) "Επεξεργασία γλυκόζης" else "Καταγραφή γλυκόζης") },
+        title = { Text(if (isEditing) stringResource(R.string.glucose) else stringResource(R.string.glucose)) },
         text  = {
             Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 OutlinedTextField(value = value, onValueChange = { value = it },
-                    label = { Text("Τιμή mg/dL") }, singleLine = true,
+                    label = { Text(stringResource(R.string.target_low)) }, singleLine = true,
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                     modifier = Modifier.fillMaxWidth(),
                     colors = fieldColors)
@@ -669,9 +682,9 @@ fun AddGlucoseDialog(
         },
         confirmButton = {
             Button(onClick = { value.toFloatOrNull()?.let { onConfirm(it, timestampMs) } },
-                enabled = value.toFloatOrNull() != null) { Text(if (isEditing) "Ενημέρωση" else "Αποθήκευση") }
+                enabled = value.toFloatOrNull() != null) { Text(if (isEditing) stringResource(R.string.save) else stringResource(R.string.save)) }
         },
-        dismissButton = { TextButton(onClick = onDismiss) { Text("Άκυρο") } }
+        dismissButton = { TextButton(onClick = onDismiss) { Text(stringResource(R.string.cancel)) } }
     )
 }
 
@@ -705,11 +718,11 @@ fun AddInsulinDialog(
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text(if (isEditing) "Επεξεργασία ινσουλίνης" else "Καταγραφή ινσουλίνης") },
+        title = { Text(stringResource(R.string.rapid_insulin)) },
         text  = {
             Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 OutlinedTextField(value = units, onValueChange = { units = it },
-                    label = { Text("Μονάδες") }, singleLine = true,
+                    label = { Text(stringResource(R.string.basal_label)) }, singleLine = true,
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                     modifier = Modifier.fillMaxWidth(),
                 colors = fieldColors)
@@ -717,13 +730,13 @@ fun AddInsulinDialog(
                 FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     InsulinType.entries.forEach { t ->
                         FilterChip(selected = type == t, onClick = { type = t },
-                            label = { Text(t.label) })
+                            label = { Text(stringResource(t.labelRes)) })
                     }
                 }
 
                 if (type != InsulinType.MIXED) {
                     val brands = if (type == InsulinType.RAPID) UserProfile.RAPID_BRANDS else UserProfile.LONG_BRANDS
-                    Text("Επιλογή μάρκας:", style = MaterialTheme.typography.labelSmall)
+                    Text(stringResource(R.string.rapid_brand) + ":", style = MaterialTheme.typography.labelSmall)
                     FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         brands.forEach { b ->
                             FilterChip(selected = brand == b, onClick = { brand = b },
@@ -737,9 +750,9 @@ fun AddInsulinDialog(
         },
         confirmButton = {
             Button(onClick = { units.toFloatOrNull()?.let { onConfirm(it, type, brand, timestampMs) } },
-                enabled = units.toFloatOrNull() != null) { Text(if (isEditing) "Ενημέρωση" else "Αποθήκευση") }
+                enabled = units.toFloatOrNull() != null) { Text(stringResource(R.string.save)) }
         },
-        dismissButton = { TextButton(onClick = onDismiss) { Text("Άυρο") } }
+        dismissButton = { TextButton(onClick = onDismiss) { Text(stringResource(R.string.cancel)) } }
     )
 }
 
@@ -770,20 +783,20 @@ fun AddMealDialog(
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text(if (isEditing) "Επεξεργασία γεύματος" else "Καταγραφή γεύματος") },
+        title = { Text(stringResource(R.string.meal)) },
         text  = {
             Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 OutlinedTextField(value = desc, onValueChange = { desc = it },
-                    label = { Text("Περιγραφή") }, singleLine = true,
+                    label = { Text(stringResource(R.string.notes_label)) }, singleLine = true,
                     modifier = Modifier.fillMaxWidth(),
                 colors = fieldColors)
                 OutlinedTextField(value = carbs, onValueChange = { carbs = it },
-                    label = { Text("Υδατάνθρακες (γρ.)") }, singleLine = true,
+                    label = { Text(stringResource(R.string.total_carbs)) }, singleLine = true,
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                     modifier = Modifier.fillMaxWidth(),
                 colors = fieldColors)
                 if (suggested != null && suggested > 0f && !isEditing) {
-                    Text("Προτεινόμενη δόση: ${String.format("%.1f", suggested)}U",
+                    Text(stringResource(R.string.suggested_label, suggested),
                         style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.W600),
                         color = MaterialTheme.colorScheme.primary)
                 }
@@ -795,8 +808,8 @@ fun AddMealDialog(
                 onClick = { if (desc.isNotBlank() && carbs.toFloatOrNull() != null)
                     onConfirm(desc, carbs.toFloat(), timestampMs) },
                 enabled = desc.isNotBlank() && carbs.toFloatOrNull() != null
-            ) { Text(if (isEditing) "Ενημέρωση" else "Αποθήκευση") }
+            ) { Text(stringResource(R.string.save)) }
         },
-        dismissButton = { TextButton(onClick = onDismiss) { Text("Άκυρο") } }
+        dismissButton = { TextButton(onClick = onDismiss) { Text(stringResource(R.string.cancel)) } }
     )
 }

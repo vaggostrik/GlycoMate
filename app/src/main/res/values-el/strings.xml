@@ -9,13 +9,21 @@
     <string name="high_status">Υψηλή ↑</string>
     <string name="in_range_status">Εντός στόχου ✓</string>
     <string name="source_label">Πηγή: %1$s</string>
-    <string name="time_in_range">Time in Range</string>
-    <string name="measurements">Μετρήσεις</string>
+    <string name="time_in_range">TIR</string>
+    <string name="measurements">Μετρ.</string>
     <string name="insulin">Ινσουλίνη</string>
     <string name="iob_label">IOB ταχείας</string>
     <string name="basal_today_label">Βραδείας σήμερα</string>
     <string name="today_logs">ΣΗΜΕΡΙΝΕΣ ΕΓΓΡΑΦΕΣ</string>
     <string name="no_logs_yet">Δεν υπάρχουν εγγραφές ακόμα.\nΠάτησε + για να ξεκινήσεις!</string>
+    <string name="estimated_hba1c">Εκτιμ. HbA1c</string>
+
+    <!-- Navigation -->
+    <string name="nav_home">Αρχική</string>
+    <string name="nav_stats">Γραφ/τα</string>
+    <string name="nav_buddy">Buddy</string>
+    <string name="nav_sos">SOS</string>
+    <string name="nav_menu">Μενού</string>
 
     <!-- FAB Labels -->
     <string name="ai_scan">AI Σκανάρισμα</string>
@@ -310,4 +318,40 @@
     <string name="theme_system">Σύστημα</string>
     <string name="theme_light">Φωτεινό</string>
     <string name="theme_dark">Σκούρο</string>
+
+    <!-- Insulin Types -->
+    <string name="insulin_rapid">Ταχείας</string>
+    <string name="insulin_long">Βραδείας</string>
+    <string name="insulin_mixed">Μικτή</string>
+
+    <!-- Glucose Trends -->
+    <string name="trend_rising_fast">Ανεβαίνει πολύ γρήγορα</string>
+    <string name="trend_rising">Ανεβαίνει γρήγορα</string>
+    <string name="trend_rising_slow">Ανεβαίνει αργά</string>
+    <string name="trend_stable">Σταθερή</string>
+    <string name="trend_falling_slow">Κατεβαίνει αργά</string>
+    <string name="trend_falling">Κατεβαίνει γρήγορα</string>
+    <string name="trend_falling_fast">Κατεβαίνει πολύ γρήγορα</string>
+
+    <!-- Statistics Screen -->
+    <string name="stats_title">Στατιστικά</string>
+    <string name="tab_day">Ημέρα</string>
+    <string name="tab_7days">7 Ημέρες</string>
+    <string name="tab_30days">30 Ημέρες</string>
+    <string name="today">Σήμερα</string>
+    <string name="yesterday">Χθες</string>
+    <string name="prev_day">Προηγούμενη ημέρα</string>
+    <string name="next_day">Επόμενη ημέρα</string>
+    <string name="stats_glucose_label">Γλυκόζη</string>
+    <string name="stats_measurements_count">%1$d μετρήσεις</string>
+    <string name="stats_empty_data">Δεν υπάρχουν δεδομένα</string>
+    <string name="stats_empty_hint">Καταγραφή ή σύνδεση CGM για να δεις γραφήματα</string>
+    <string name="stats_avg">Μ.Ο.</string>
+    <string name="stats_min">Ελάχιστη</string>
+    <string name="stats_max">Μέγιστη</string>
+    <string name="stats_std_dev">Τυπ. Απόκλιση</string>
+    <string name="stats_total">Σύνολο</string>
+    <string name="stats_est_hba1c_hint">* Εκτιμώμενο HbA1c — δεν αντικαθιστά εργαστηριακή εξέταση</string>
+    <string name="daily_pattern_title">Ημερήσιο μοτίβο (μ.ο. ανά ώρα)</string>
+    <string name="per_day_title">Ανά ημέρα</string>
 </resources>

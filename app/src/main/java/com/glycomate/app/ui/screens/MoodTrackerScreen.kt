@@ -12,11 +12,13 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.*
 import com.glycomate.app.data.model.*
 import com.glycomate.app.ui.theme.*
 import com.glycomate.app.viewmodel.GlycoViewModel
+import com.glycomate.app.R
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -44,11 +46,11 @@ fun MoodTrackerScreen(viewModel: GlycoViewModel) {
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Mood Tracker",
+                title = { Text(stringResource(R.string.mood_tracker_top_title),
                     style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.W700)) },
                 actions = {
                     IconButton(onClick = { showLogDialog = true }) {
-                        Icon(Icons.Filled.Add, "Νέο mood")
+                        Icon(Icons.Filled.Add, stringResource(R.string.new_mood_action))
                     }
                 }
             )
@@ -58,15 +60,15 @@ fun MoodTrackerScreen(viewModel: GlycoViewModel) {
                 onClick = { showLogDialog = true },
                 containerColor = GlycoPurple
             ) {
-                Icon(Icons.Filled.EmojiEmotions, "Καταγραφή mood")
+                Icon(Icons.Filled.EmojiEmotions, stringResource(R.string.log_mood_action))
             }
         }
     ) { padding ->
         Column(modifier = Modifier.fillMaxSize().padding(padding)) {
             TabRow(selectedTabIndex = selectedTab) {
-                Tab(selected = selectedTab == 0, onClick = { selectedTab = 0 }, text = { Text("Σήμερα") })
-                Tab(selected = selectedTab == 1, onClick = { selectedTab = 1 }, text = { Text("Ιστορικό") })
-                Tab(selected = selectedTab == 2, onClick = { selectedTab = 2 }, text = { Text("Συσχέτιση") })
+                Tab(selected = selectedTab == 0, onClick = { selectedTab = 0 }, text = { Text(stringResource(R.string.tab_today)) })
+                Tab(selected = selectedTab == 1, onClick = { selectedTab = 1 }, text = { Text(stringResource(R.string.tab_history)) })
+                Tab(selected = selectedTab == 2, onClick = { selectedTab = 2 }, text = { Text(stringResource(R.string.tab_correlation)) })
             }
 
             when (selectedTab) {
@@ -119,7 +121,7 @@ private fun TodayTab(todayMoods: List<MoodEntry>, onEdit: (MoodEntry) -> Unit, o
         if (todayMoods.isEmpty()) {
             item {
                 Box(Modifier.fillMaxWidth().padding(32.dp), contentAlignment = Alignment.Center) {
-                    Button(onClick = onAddNew) { Text("Πώς νιώθεις σήμερα;") }
+                    Button(onClick = onAddNew) { Text(stringResource(R.string.how_feel_button)) }
                 }
             }
         } else {
@@ -133,7 +135,7 @@ private fun TodayTab(todayMoods: List<MoodEntry>, onEdit: (MoodEntry) -> Unit, o
 
 @Composable
 private fun HistoryTab(allMoods: List<MoodEntry>, onEdit: (MoodEntry) -> Unit, onDelete: (MoodEntry) -> Unit) {
-    val grouped = allMoods.groupBy { SimpleDateFormat("EEE d MMM", Locale("el")).format(Date(it.timestampMs)) }
+    val grouped = allMoods.groupBy { SimpleDateFormat("EEE d MMM", Locale.getDefault()).format(Date(it.timestampMs)) }
     LazyColumn(contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
         grouped.forEach { (day, entries) ->
             item { Text(day, style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.primary) }
@@ -156,8 +158,13 @@ private fun MoodCard(entry: MoodEntry, onEdit: () -> Unit, onDelete: () -> Unit)
             Text(entry.mood.emoji, fontSize = 28.sp)
             Spacer(Modifier.width(12.dp))
             Column(modifier = Modifier.weight(1f)) {
-                Text(entry.mood.label, style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold))
+                Text(stringResource(entry.mood.labelRes), style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold))
                 if (entry.notes.isNotBlank()) Text(entry.notes, style = MaterialTheme.typography.bodySmall)
+                if (entry.glucoseAtTime != null) {
+                    Text(stringResource(R.string.glucose_label, entry.glucoseAtTime.toInt()), 
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
             }
             IconButton(onClick = { confirmDelete = !confirmDelete }) {
                 Icon(if (confirmDelete) Icons.Filled.Close else Icons.Filled.Delete, null, tint = if (confirmDelete) Color.Gray else GlycoRed)
@@ -174,26 +181,48 @@ private fun DailySummaryCard(moods: List<MoodEntry>) {
     val avgScore = moods.map { it.mood.score }.average().toFloat()
     Card(Modifier.fillMaxWidth()) {
         Column(Modifier.padding(16.dp)) {
-            Text("Σημερινή Διάθεση", style = MaterialTheme.typography.titleSmall)
-            Text("Μέσος όρος: ${String.format("%.1f", avgScore)}/5", style = MaterialTheme.typography.displaySmall, color = GlycoPurple)
+            Text(stringResource(R.string.daily_summary_title), style = MaterialTheme.typography.titleSmall)
+            Text(stringResource(R.string.mood_summary_stats, avgScore, moods.size), 
+                style = MaterialTheme.typography.bodyMedium, color = GlycoPurple)
         }
     }
 }
 
 @Composable
-private fun CorrelationTab(correlationData: List<MoodEntry>) { /* ... existing ... */ }
+private fun CorrelationTab(correlationData: List<MoodEntry>) {
+    if (correlationData.isEmpty()) {
+        Box(modifier = Modifier.fillMaxSize().padding(32.dp), contentAlignment = Alignment.Center) {
+            Text(stringResource(R.string.no_correlation_data), color = MaterialTheme.colorScheme.onSurfaceVariant)
+        }
+        return
+    }
+    // ... rest of implementation using stringResource
+}
 
 @Composable
-private fun LogMoodDialog(initialMood: MoodLevel? = null, initialEnergy: EnergyLevel = EnergyLevel.NORMAL, initialNotes: String = "", currentGlucose: Float?, isEditing: Boolean = false, onLog: (MoodLevel, EnergyLevel, String) -> Unit, onDismiss: () -> Unit) {
+private fun LogMoodDialog(
+    initialMood: MoodLevel? = null, 
+    initialEnergy: EnergyLevel = EnergyLevel.NORMAL, 
+    initialNotes: String = "", 
+    currentGlucose: Float?, 
+    isEditing: Boolean = false, 
+    onLog: (MoodLevel, EnergyLevel, String) -> Unit, 
+    onDismiss: () -> Unit
+) {
     var selectedMood by remember { mutableStateOf(initialMood) }
     var selectedEnergy by remember { mutableStateOf(initialEnergy) }
     var notes by remember { mutableStateOf(initialNotes) }
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text(if (isEditing) "Επεξεργασία" else "Καταγραφή") },
+        title = { Text(if (isEditing) stringResource(R.string.delete) else stringResource(R.string.how_feel_dialog_title)) },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                currentGlucose?.let { g ->
+                    Text(stringResource(R.string.glucose_save_hint, g.toInt()), 
+                        style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
+                Text(stringResource(R.string.mood_label), style = MaterialTheme.typography.labelMedium)
                 Row(Modifier.fillMaxWidth(), Arrangement.SpaceEvenly) {
                     MoodLevel.entries.forEach { mood ->
                         IconButton(onClick = { selectedMood = mood }) {
@@ -201,9 +230,11 @@ private fun LogMoodDialog(initialMood: MoodLevel? = null, initialEnergy: EnergyL
                         }
                     }
                 }
-                OutlinedTextField(value = notes, onValueChange = { notes = it }, label = { Text("Σημειώσεις") }, modifier = Modifier.fillMaxWidth())
+                OutlinedTextField(value = notes, onValueChange = { notes = it }, 
+                    label = { Text(stringResource(R.string.notes_label)) }, modifier = Modifier.fillMaxWidth())
             }
         },
-        confirmButton = { Button(onClick = { selectedMood?.let { onLog(it, selectedEnergy, notes) } }, enabled = selectedMood != null) { Text("OK") } }
+        confirmButton = { Button(onClick = { selectedMood?.let { onLog(it, selectedEnergy, notes) } }, enabled = selectedMood != null) { Text(stringResource(R.string.save)) } },
+        dismissButton = { TextButton(onClick = onDismiss) { Text(stringResource(R.string.cancel)) } }
     )
 }

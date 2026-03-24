@@ -142,7 +142,7 @@ object PdfReportGenerator {
                     val typeEntries = ins.filter { it.type == t }
                     if (typeEntries.isNotEmpty()) {
                         val sum = typeEntries.sumOf { it.units.toDouble() }.toFloat()
-                        canvas.drawText("${t.label}: ${String.format("%.1f", sum)} μον. (${typeEntries.size}x)",
+                        canvas.drawText("${context.getString(t.labelRes)}: ${String.format("%.1f", sum)} μον. (${typeEntries.size}x)",
                             60f, y.toFloat(), smallPaint)
                         nl()
                     }

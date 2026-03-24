@@ -177,7 +177,7 @@ private fun InsulinList(entries: List<InsulinEntry>, onDelete: (InsulinEntry) ->
                         Icon(Icons.Filled.Colorize, null, tint = GlycoAmber,
                             modifier = Modifier.size(20.dp))
                         Column {
-                            Text("${e.units}U  ${e.type.label}",
+                            Text("${e.units}U  ${stringResource(e.type.labelRes)}",
                                 style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.W600))
                             if (e.note.isNotBlank())
                                 Text(e.note, style = MaterialTheme.typography.labelSmall,

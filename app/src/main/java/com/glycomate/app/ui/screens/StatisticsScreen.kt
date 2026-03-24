@@ -10,8 +10,10 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.*
+import com.glycomate.app.R
 import com.glycomate.app.data.model.GlucoseReading
 import com.glycomate.app.ui.components.DailyGlucoseChart
 import com.glycomate.app.ui.components.GlucoseLineChart
@@ -60,18 +62,20 @@ fun StatisticsScreen(viewModel: GlycoViewModel) {
     }
 
     // Day label for navigation header
-    val dayLabel = remember(dayOffset) {
+    val todayStr = stringResource(R.string.today)
+    val yesterdayStr = stringResource(R.string.yesterday)
+    val dayLabel = remember(dayOffset, todayStr, yesterdayStr) {
         when (dayOffset) {
-            0  -> "Σήμερα"
-            -1 -> "Χθες"
-            else -> SimpleDateFormat("EEE d/M", Locale("el"))
+            0  -> todayStr
+            -1 -> yesterdayStr
+            else -> SimpleDateFormat("EEE d/M", Locale.getDefault())
                 .format(Date(selectedDayStart)).replaceFirstChar { it.uppercase() }
         }
     }
 
     Scaffold(topBar = {
         TopAppBar(
-            title = { Text("Στατιστικά",
+            title = { Text(stringResource(R.string.stats_title),
                 style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.W700)) },
             colors = TopAppBarDefaults.topAppBarColors(
                 containerColor = MaterialTheme.colorScheme.background)
@@ -83,11 +87,11 @@ fun StatisticsScreen(viewModel: GlycoViewModel) {
             TabRow(selectedTabIndex = selectedTab,
                 containerColor = MaterialTheme.colorScheme.background) {
                 Tab(selected = selectedTab == 0, onClick = { selectedTab = 0 },
-                    text = { Text("Ημέρα") })
+                    text = { Text(stringResource(R.string.tab_day)) })
                 Tab(selected = selectedTab == 1, onClick = { selectedTab = 1 },
-                    text = { Text("7 Ημέρες") })
+                    text = { Text(stringResource(R.string.tab_7days)) })
                 Tab(selected = selectedTab == 2, onClick = { selectedTab = 2 },
-                    text = { Text("30 Ημέρες") })
+                    text = { Text(stringResource(R.string.tab_30days)) })
             }
 
             // ── Tab 0: Day-by-day view ─────────────────────────────────
@@ -101,7 +105,7 @@ fun StatisticsScreen(viewModel: GlycoViewModel) {
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         IconButton(onClick = { dayOffset-- }) {
-                            Icon(Icons.Filled.ChevronLeft, "Προηγούμενη ημέρα")
+                            Icon(Icons.Filled.ChevronLeft, stringResource(R.string.prev_day))
                         }
                         Text(dayLabel,
                             style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.W600))
@@ -109,7 +113,7 @@ fun StatisticsScreen(viewModel: GlycoViewModel) {
                             onClick = { if (dayOffset < 0) dayOffset++ },
                             enabled = dayOffset < 0
                         ) {
-                            Icon(Icons.Filled.ChevronRight, "Επόμενη ημέρα",
+                            Icon(Icons.Filled.ChevronRight, stringResource(R.string.next_day),
                                 tint = if (dayOffset < 0) MaterialTheme.colorScheme.onSurface
                                        else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f))
                         }
@@ -132,10 +136,10 @@ fun StatisticsScreen(viewModel: GlycoViewModel) {
                                     Row(modifier = Modifier.fillMaxWidth(),
                                         horizontalArrangement = Arrangement.SpaceBetween,
                                         verticalAlignment = Alignment.CenterVertically) {
-                                        Text("Γλυκόζη",
+                                        Text(stringResource(R.string.stats_glucose_label),
                                             style = MaterialTheme.typography.titleSmall
                                                 .copy(fontWeight = FontWeight.W600))
-                                        Text("${selectedDayReadings.size} μετρήσεις",
+                                        Text(stringResource(R.string.stats_measurements_count, selectedDayReadings.size),
                                             style = MaterialTheme.typography.labelSmall,
                                             color = MaterialTheme.colorScheme.onSurfaceVariant)
                                     }
@@ -251,10 +255,10 @@ fun StatisticsScreen(viewModel: GlycoViewModel) {
                     Column(horizontalAlignment = Alignment.CenterHorizontally,
                         verticalArrangement = Arrangement.spacedBy(8.dp)) {
                         Text("📊", fontSize = 48.sp)
-                        Text("Δεν υπάρχουν δεδομένα",
+                        Text(stringResource(R.string.stats_empty_data),
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant)
-                        Text("Καταγραφή ή σύνδεση CGM για να δεις γραφήματα",
+                        Text(stringResource(R.string.stats_empty_hint),
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant)
                     }
@@ -277,10 +281,10 @@ fun StatisticsScreen(viewModel: GlycoViewModel) {
                             Row(modifier = Modifier.fillMaxWidth(),
                                 horizontalArrangement = Arrangement.SpaceBetween,
                                 verticalAlignment = Alignment.CenterVertically) {
-                                Text("Γλυκόζη",
+                                Text(stringResource(R.string.stats_glucose_label),
                                     style = MaterialTheme.typography.titleSmall
                                         .copy(fontWeight = FontWeight.W600))
-                                Text("${readings.size} μετρήσεις",
+                                Text(stringResource(R.string.stats_measurements_count, readings.size),
                                     style = MaterialTheme.typography.labelSmall,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant)
                             }
@@ -351,16 +355,16 @@ private fun StatSummaryCard(
         Column(modifier = Modifier.padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)) {
 
-            Text("Στατιστικά", style = MaterialTheme.typography.titleSmall
+            Text(stringResource(R.string.history_title), style = MaterialTheme.typography.titleSmall
                 .copy(fontWeight = FontWeight.W600))
 
             Row(modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceEvenly) {
-                StatBox("Μ.Ο.", "${avg.toInt()}", "mg/dL",
+                StatBox(stringResource(R.string.stats_avg), "${avg.toInt()}", "mg/dL",
                     colorFor(avg, targetLow, targetHigh))
-                StatBox("Ελάχιστη", "${min.toInt()}", "mg/dL",
+                StatBox(stringResource(R.string.stats_min), "${min.toInt()}", "mg/dL",
                     if (min < targetLow) GlycoRed else MaterialTheme.colorScheme.onSurface)
-                StatBox("Μέγιστη", "${max.toInt()}", "mg/dL",
+                StatBox(stringResource(R.string.stats_max), "${max.toInt()}", "mg/dL",
                     if (max > targetHigh) GlycoAmber else MaterialTheme.colorScheme.onSurface)
             }
 
@@ -368,20 +372,20 @@ private fun StatSummaryCard(
 
             Row(modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceEvenly) {
-                StatBox("Τυπ. Απόκλιση", "${stdDev.toInt()}", "mg/dL",
+                StatBox(stringResource(R.string.stats_std_dev), "${stdDev.toInt()}", "mg/dL",
                     MaterialTheme.colorScheme.primary)
-                StatBox("Εκτιμ. HbA1c", String.format("%.1f", estA1c), "%",
+                StatBox(stringResource(R.string.estimated_hba1c), String.format("%.1f", estA1c), "%",
                     when {
                         estA1c < 7f  -> GlycoGreen
                         estA1c < 8f  -> GlycoAmber
                         else         -> GlycoRed
                     })
-                StatBox("Μετρήσεις", "${readings.size}", "σύνολο",
+                StatBox(stringResource(R.string.stats_total), "${readings.size}", stringResource(R.string.measurements),
                     MaterialTheme.colorScheme.tertiary)
             }
 
             // HbA1c note
-            Text("* Εκτιμώμενο HbA1c — δεν αντικαθιστά εργαστηριακή εξέταση",
+            Text(stringResource(R.string.stats_est_hba1c_hint),
                 style = MaterialTheme.typography.labelSmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
@@ -423,7 +427,7 @@ private fun DailyPatternCard(readings: List<GlucoseReading>) {
         Column(modifier = Modifier.padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)) {
 
-            Text("Ημερήσιο μοτίβο (μ.ο. ανά ώρα)",
+            Text(stringResource(R.string.daily_pattern_title),
                 style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.W600))
 
             // Simple bar chart per hour
@@ -468,7 +472,7 @@ private fun DayBreakdownCard(
     targetLow: Float,
     targetHigh: Float
 ) {
-    val sdf = SimpleDateFormat("EEE d/M", Locale("el"))
+    val sdf = SimpleDateFormat("EEE d/M", Locale.getDefault())
     val byDay = readings
         .groupBy { r ->
             Calendar.getInstance().apply { timeInMillis = r.timestampMs }.let {
@@ -489,7 +493,7 @@ private fun DayBreakdownCard(
         Column(modifier = Modifier.padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(10.dp)) {
 
-            Text("Ανά ημέρα",
+            Text(stringResource(R.string.per_day_title),
                 style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.W600))
 
             byDay.forEach { (dayMs, dayReadings) ->

@@ -16,6 +16,14 @@
     <string name="basal_today_label">Basal today</string>
     <string name="today_logs">TODAY\'S LOGS</string>
     <string name="no_logs_yet">No logs yet.\nTap + to start!</string>
+    <string name="estimated_hba1c">Est. HbA1c</string>
+
+    <!-- Navigation -->
+    <string name="nav_home">Home</string>
+    <string name="nav_stats">Stats</string>
+    <string name="nav_buddy">Buddy</string>
+    <string name="nav_sos">SOS</string>
+    <string name="nav_menu">Menu</string>
 
     <!-- FAB Labels -->
     <string name="ai_scan">AI Scan</string>
@@ -310,4 +318,40 @@
     <string name="theme_system">System</string>
     <string name="theme_light">Light</string>
     <string name="theme_dark">Dark</string>
+
+    <!-- Insulin Types -->
+    <string name="insulin_rapid">Rapid</string>
+    <string name="insulin_long">Long-acting</string>
+    <string name="insulin_mixed">Mixed</string>
+
+    <!-- Glucose Trends -->
+    <string name="trend_rising_fast">Rising very fast</string>
+    <string name="trend_rising">Rising fast</string>
+    <string name="trend_rising_slow">Rising slowly</string>
+    <string name="trend_stable">Stable</string>
+    <string name="trend_falling_slow">Falling slowly</string>
+    <string name="trend_falling">Falling fast</string>
+    <string name="trend_falling_fast">Falling very fast</string>
+
+    <!-- Statistics Screen -->
+    <string name="stats_title">Statistics</string>
+    <string name="tab_day">Day</string>
+    <string name="tab_7days">7 Days</string>
+    <string name="tab_30days">30 Days</string>
+    <string name="today">Today</string>
+    <string name="yesterday">Yesterday</string>
+    <string name="prev_day">Previous day</string>
+    <string name="next_day">Next day</string>
+    <string name="stats_glucose_label">Glucose</string>
+    <string name="stats_measurements_count">%1$d measurements</string>
+    <string name="stats_empty_data">No data</string>
+    <string name="stats_empty_hint">Log readings or connect CGM to see charts</string>
+    <string name="stats_avg">Avg.</string>
+    <string name="stats_min">Min</string>
+    <string name="stats_max">Max</string>
+    <string name="stats_std_dev">Std Dev</string>
+    <string name="stats_total">Total</string>
+    <string name="stats_est_hba1c_hint">* Estimated HbA1c — not a lab test replacement</string>
+    <string name="daily_pattern_title">Daily pattern (avg per hour)</string>
+    <string name="per_day_title">Per day</string>
 </resources>

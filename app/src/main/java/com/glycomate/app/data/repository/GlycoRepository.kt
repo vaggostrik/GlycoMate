@@ -294,7 +294,7 @@ class GlycoRepository(private val context: Context) {
                 timestampMs   = m.timestampMs,
                 moodScore     = m.mood.score.toFloat(),
                 glucoseAtTime = m.glucoseAtTime,
-                moodLabel     = m.mood.label,
+                moodLabel     = context.getString(m.mood.labelRes),
                 moodEmoji     = m.mood.emoji
             )
         }

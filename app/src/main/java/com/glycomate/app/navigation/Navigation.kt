@@ -3,6 +3,7 @@ package com.glycomate.app.navigation
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.ui.graphics.vector.ImageVector
+import com.glycomate.app.R
 
 sealed class Screen(val route: String) {
     object Onboarding    : Screen("onboarding")
@@ -18,13 +19,13 @@ sealed class Screen(val route: String) {
     object Settings      : Screen("settings")
 }
 
-data class NavItem(val screen: Screen, val label: String, val icon: ImageVector)
+data class NavItem(val screen: Screen, val labelRes: Int, val icon: ImageVector)
 
 // 5 items in bottom nav — the rest accessible from Settings / Dashboard
 val bottomNavItems = listOf(
-    NavItem(Screen.Dashboard,  "Home",      Icons.Filled.Home),
-    NavItem(Screen.Statistics, "Γραφ/τα",   Icons.Filled.BarChart),
-    NavItem(Screen.Buddy,      "Buddy",     Icons.Filled.EmojiEmotions),
-    NavItem(Screen.Sos,        "SOS",       Icons.Filled.Warning),
-    NavItem(Screen.Settings,   "Μενού",     Icons.Filled.Menu),
+    NavItem(Screen.Dashboard,  R.string.nav_home,  Icons.Filled.Home),
+    NavItem(Screen.Statistics, R.string.nav_stats, Icons.Filled.BarChart),
+    NavItem(Screen.Buddy,      R.string.nav_buddy, Icons.Filled.EmojiEmotions),
+    NavItem(Screen.Sos,        R.string.nav_sos,   Icons.Filled.Warning),
+    NavItem(Screen.Settings,   R.string.nav_menu,  Icons.Filled.Menu),
 )

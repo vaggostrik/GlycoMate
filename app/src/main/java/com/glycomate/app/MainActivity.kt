@@ -12,6 +12,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -99,6 +100,7 @@ private fun MainApp(vm: GlycoViewModel) {
             bottomBar = {
                 NavigationBar {
                     bottomNavItems.forEach { item ->
+                        val label = stringResource(item.labelRes)
                         NavigationBarItem(
                             selected = currentRoute == item.screen.route,
                             onClick  = {
@@ -110,8 +112,8 @@ private fun MainApp(vm: GlycoViewModel) {
                                     restoreState    = true
                                 }
                             },
-                            icon  = { Icon(item.icon, item.label) },
-                            label = { Text(item.label) }
+                            icon  = { Icon(item.icon, label) },
+                            label = { Text(label) }
                         )
                     }
                 }

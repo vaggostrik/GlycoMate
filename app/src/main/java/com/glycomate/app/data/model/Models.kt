@@ -2,6 +2,7 @@ package com.glycomate.app.data.model
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import com.glycomate.app.R
 
 // ── Glucose Reading ──────────────────────────────────────────────────────────
 @Entity(tableName = "glucose_readings")
@@ -13,14 +14,14 @@ data class GlucoseReading(
     val source: DataSource = DataSource.MANUAL
 )
 
-enum class GlucoseTrend(val arrow: String, val label: String) {
-    RISING_FAST ("↑↑", "Ανεβαίνει πολύ γρήγορα"),
-    RISING      ("↑",  "Ανεβαίνει γρήγορα"),
-    RISING_SLOW ("↗",  "Ανεβαίνει αργά"),
-    STABLE      ("→",  "Σταθερή"),
-    FALLING_SLOW("↘",  "Κατεβαίνει αργά"),
-    FALLING     ("↓",  "Κατεβαίνει γρήγορα"),
-    FALLING_FAST("↓↓", "Κατεβαίνει πολύ γρήγορα")
+enum class GlucoseTrend(val arrow: String, val labelRes: Int) {
+    RISING_FAST ("↑↑", R.string.trend_rising_fast),
+    RISING      ("↑",  R.string.trend_rising),
+    RISING_SLOW ("↗",  R.string.trend_rising_slow),
+    STABLE      ("→",  R.string.trend_stable),
+    FALLING_SLOW("↘",  R.string.trend_falling_slow),
+    FALLING     ("↓",  R.string.trend_falling),
+    FALLING_FAST("↓↓", R.string.trend_falling_fast)
 }
 
 enum class DataSource { MANUAL, LIBRE_LINK_UP, NIGHTSCOUT, DEXCOM }
@@ -44,10 +45,10 @@ data class InsulinEntry(
     val brand: String = ""
 )
 
-enum class InsulinType(val label: String) {
-    RAPID("Ταχείας"),
-    LONG ("Βραδείας"),
-    MIXED("Μικτή")
+enum class InsulinType(val labelRes: Int) {
+    RAPID(R.string.insulin_rapid),
+    LONG (R.string.insulin_long),
+    MIXED(R.string.insulin_mixed)
 }
 
 // ── Meal Entry ───────────────────────────────────────────────────────────────
@@ -72,25 +73,25 @@ data class MoodEntry(
     val glucoseAtTime: Float? = null
 )
 
-enum class MoodLevel(val emoji: String, val label: String, val score: Int) {
-    VERY_BAD  ("😞", "Πολύ κακή",  1),
-    BAD       ("😔", "Κακή",       2),
-    NEUTRAL   ("😐", "Ουδέτερη",   3),
-    GOOD      ("😊", "Καλή",       4),
-    VERY_GOOD ("😄", "Πολύ καλή",  5)
+enum class MoodLevel(val emoji: String, val labelRes: Int, val score: Int) {
+    VERY_BAD  ("😞", R.string.mood_very_bad,  1),
+    BAD       ("😔", R.string.mood_bad,       2),
+    NEUTRAL   ("😐", R.string.mood_neutral_level,   3),
+    GOOD      ("😊", R.string.mood_good,      4),
+    VERY_GOOD ("😄", R.string.mood_very_good,  5)
 }
 
-enum class EnergyLevel(val emoji: String, val label: String) {
-    EXHAUSTED ("🪫", "Εξάντληση"),
-    TIRED     ("😴", "Κούραση"),
-    NORMAL    ("⚡", "Κανονικό"),
-    ENERGIZED ("🔋", "Ενεργητικός"),
-    HYPER     ("🚀", "Υπερδραστήριος")
+enum class EnergyLevel(val emoji: String, val labelRes: Int) {
+    EXHAUSTED ("🪫", R.string.energy_exhausted),
+    TIRED     ("😴", R.string.energy_tired),
+    NORMAL    ("⚡", R.string.energy_normal),
+    ENERGIZED ("🔋", R.string.energy_energized),
+    HYPER     ("🚀", R.string.energy_hyper)
 }
 
 data class UserProfile(
     val name: String               = "",
-    val diabetesType: String       = "Τύπος 1",
+    val diabetesType: String       = "T1D",
     val targetLow: Float           = 70f,
     val targetHigh: Float          = 180f,
     val icr: Float                 = 10f,
